@@ -153,9 +153,8 @@ class Request
             return $this->data;
         }
         
+        $allWithExcession = $this->data;
         $except = explode(',', $except);
-
-        dd($except);
 
         $except = array_map(function($excession) {
             return trim(rtrim($excession));
@@ -164,10 +163,23 @@ class Request
         foreach($except as $excession) {
             if(!isset($this->data[$excession])) return;
 
-            unset($this->data[$excession]);
+            unset($allWithExcession[$excession]);
         }
 
-        return $this->data;
+        return $allWithExcession;
+    }
+
+    /**
+     * Method responsible for returning only
+     * the data passed in parameter.
+     * 
+     * @param string $only
+     * 
+     * @return array|string
+     */
+    public function only(String $only)
+    {
+        $result = [];
     }
 
     /**

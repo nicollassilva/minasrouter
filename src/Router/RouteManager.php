@@ -59,7 +59,7 @@ class RouteManager
      * 
      * @return string
      */
-    public function getRoute()
+    public function getRoute(): String
     {
         return $this->filteredRoute();
     }
@@ -70,7 +70,7 @@ class RouteManager
      * 
      * @return string
      */
-    protected function filteredRoute()
+    protected function filteredRoute(): String
     {
         $parameters = $this->foundParameters();
 
@@ -96,9 +96,9 @@ class RouteManager
      * 
      * @return null|string
      */
-    protected function getWhere(String $param)
+    protected function getWhere(String $param): ?String
     {
-        if(!isset($this->where[$param])) return;
+        if(!isset($this->where[$param])) return null;
 
         return $this->where[$param];
     }
@@ -123,11 +123,24 @@ class RouteManager
         return $params;
     }
 
-    public function closureReturn()
+    /**
+     * Method responsible for returning the parameters
+     * for the route action.
+     * 
+     * @return array
+     */
+    public function closureReturn(): Array
     {
-        $getParams = $this->request()->getParams() ?? array_flip($this->foundParameters(true, true));
+        $getParams = $this->request()->getParams();
+        $dinamycParameters = array_fill_keys($this->foundParameters(true, true), null);
 
-        $params = array_values($getParams);
+        if($this->request()->getMethod() == 'GET'){
+            $params = array_values(
+                array_merge($dinamycParameters, $getParams)
+            );
+        } else {
+            $params = [];
+        }
 
         return [
             ...$params,
@@ -212,7 +225,7 @@ class RouteManager
      * 
      * @return mixed
      */
-    public function getName()
+    public function getName(): mixed
     {
         return $this->name;
     }
@@ -242,7 +255,7 @@ class RouteManager
      * 
      * @return \MinasRouter\Http\Request
      */
-    public function request()
+    public function request(): Request
     {
         return $this->request;
     }
@@ -254,8 +267,22 @@ class RouteManager
      * 
      * @return \MinasRouter\Router\RouteManager
      */
-    public function as(String $name)
+    public function as(String $name): RouteManager
     {
         return $this->name($name);
+    }
+
+    /**
+     * Method responsible for defining the middlewares of the route.
+     * 
+     * @param string|array $middleware
+     * 
+     * @return \MinasRouter\Router\RouteManager
+     */
+    public function middleware($middleware): RouteManager
+    {
+        $this->middleware = $middleware;
+
+        return $this;
     }
 }

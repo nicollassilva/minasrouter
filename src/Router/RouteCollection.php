@@ -33,6 +33,8 @@ class RouteCollection
         "PUT" => [],
         "PATCH" => [],
         "DELETE" => [],
+        "ANY" => [],
+        "MATCH" => []
     ];
 
     public function __construct(String $separator, String $baseUrl)
@@ -47,6 +49,17 @@ class RouteCollection
         if(array_key_exists($method, $this->routes)) {
             return $this->routes[$method][$uri] = $this->addRouter($uri, $callback);
         }
+    }
+
+    public function addMultipleRoutes(String $uri, $callback, ?Array $methods = null)
+    {
+        if(!$methods) {
+            $methods = array_keys($this->routes);
+        }
+
+        array_map(function($method) use ($uri, $callback) {
+            $this->routes[$method][$uri] = $this->addRouter($uri, $callback);
+        }, $methods);
     }
     
     public function __call($method, $arguments)
@@ -73,7 +86,7 @@ class RouteCollection
     {
         if(!$route = $this->currentRoute) {
             throw new NotFoundException(sprintf(
-                    "Route [%s] not found,", $_SERVER['REQUEST_URI']
+                    "Route [%s] with method [%s] not found,", $_SERVER['REQUEST_URI'], $_SERVER['REQUEST_METHOD']
                 ), $this->httpCodes['notFound']);
         }
 

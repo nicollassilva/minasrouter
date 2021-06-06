@@ -6,11 +6,17 @@ use MinasRouter\Router\RouteCollection;
 
 abstract class Route extends RouteCollection
 {
+    /** @var string */
     protected static $projectUrl;
 
+    /** @var object */
     public static $collection;
 
+    /** @var string */
     protected static $separator = '@';
+
+    /** @var object */
+    protected $obMiddleware;
 
     /**
      * @param string $projectUrl
@@ -41,6 +47,8 @@ abstract class Route extends RouteCollection
     /**
      * @param string $uri
      * @param \Closure|array $callback
+     * 
+     * @return \MinasRouter\Router\RouterManager
      */
     public static function post(String $uri, $callback)
     {
@@ -50,6 +58,8 @@ abstract class Route extends RouteCollection
     /**
      * @param string $uri
      * @param \Closure|array $callback
+     * 
+     * @return \MinasRouter\Router\RouterManager
      */
     public static function put(String $uri, $callback)
     {
@@ -59,6 +69,8 @@ abstract class Route extends RouteCollection
     /**
      * @param string $uri
      * @param \Closure|array $callback
+     * 
+     * @return \MinasRouter\Router\RouterManager
      */
     public static function patch(String $uri, $callback)
     {
@@ -68,6 +80,8 @@ abstract class Route extends RouteCollection
     /**
      * @param string $uri
      * @param \Closure|array $callback
+     * 
+     * @return \MinasRouter\Router\RouterManager
      */
     public static function delete(String $uri, $callback)
     {
@@ -77,19 +91,23 @@ abstract class Route extends RouteCollection
     /**
      * @param string $uri
      * @param \Closure|array $callback
+     * 
+     * @return \MinasRouter\Router\RouterManager
      */
     public static function any(String $uri, $callback)
     {
-        return self::$collection->addRoute("any", $uri, $callback);
+        return self::$collection->addMultipleRoutes($uri, $callback);
     }
 
     /**
      * @param string $uri
      * @param \Closure|array $callback
+     * 
+     * @return \MinasRouter\Router\RouterManager
      */
-    public static function match(Array $uri, $callback)
+    public static function match(Array $methods, String $uri, $callback)
     {
-        return self::$collection->addRoute("match", $uri, $callback);
+        return self::$collection->addMultipleRoutes($uri, $callback, $methods);
     }
 
     public static function __callStatic($method, $arguments)
@@ -99,9 +117,16 @@ abstract class Route extends RouteCollection
 
     /**
      * Execute the routers
+     * 
+     * @return void
      */
     public static function execute()
     {
         self::$collection->run();
+    }
+
+    public static function middlewares(Array $middlewares)
+    {
+
     }
 }
