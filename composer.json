@@ -10,7 +10,8 @@
         "Routes"
     ],
     "require-dev": {
-        "symfony/var-dumper": "^5.3"
+        "symfony/var-dumper": "^5.3",
+        "phpunit/phpunit": "9"
     },
     "license": "MIT",
     "authors": [
@@ -27,5 +28,8 @@
         "psr-4": {
             "MinasRouter\\": "src/"
         }
+    },
+    "scripts": {
+        "tests": "vendor\\bin\\phpunit --testdox tests"
     }
 }

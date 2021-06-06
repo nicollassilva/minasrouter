@@ -44,6 +44,16 @@ class RouteCollection
         $this->currentUri = filter_input(INPUT_GET, "route", FILTER_DEFAULT) ?? '/';
     }
 
+    /**
+     * Method responsible for adding a
+     * route to an http method.
+     * 
+     * @param string $method
+     * @param string $uri
+     * @param array|string|\Closure $callback
+     * 
+     * @return \MinasRouter\Router\RouteManager
+     */
     public function addRoute(String $method, $uri, $callback)
     {
         if(array_key_exists($method, $this->routes)) {
@@ -51,25 +61,52 @@ class RouteCollection
         }
     }
 
-    public function addMultipleRoutes(String $uri, $callback, ?Array $methods = null)
+    /**
+     * Method responsible for adding the same
+     * route in more than one http method.
+     * 
+     * @param string $uri
+     * @param array|string|\Closure $callback
+     * @param null|array $methods
+     * 
+     * @return \MinasRouter\Router\RouteManager
+     */
+    public function addMultipleHttpRoutes(String $uri, $callback, ?Array $methods = null)
     {
         if(!$methods) {
             $methods = array_keys($this->routes);
         }
+
+        $methods = array_map('strtoupper', $methods);
 
         array_map(function($method) use ($uri, $callback) {
             $this->routes[$method][$uri] = $this->addRouter($uri, $callback);
         }, $methods);
     }
     
-    public function __call($method, $arguments)
+    /**
+     * Method responsible for handling method
+     * calls that do not exist in the class.
+     * 
+     * @param string $method
+     * @param array $arguments
+     * 
+     * @return \MinasRouter\Exceptions\BadMethodCallException
+     */
+    public function __call($method, $arguments): BadMethodCallException
     {
         throw new BadMethodCallException(sprintf(
             "Method [%s::%s] doesn't exist.", static::class, $method
         ), $this->httpCodes["badRequest"]);
     }
 
-    public function run()
+    /**
+     * Method responsible for listening to browser calls
+     * and returning the corresponding route.
+     * 
+     * @return void
+     */
+    public function run(): void
     {
         $this->currentRoute = null;
 
@@ -79,10 +116,16 @@ class RouteCollection
             }
         }
 
-        return $this->dispatchRoute();
+        $this->dispatchRoute();
     }
 
-    public function dispatchRoute()
+    /**
+     * Method responsible for performing
+     * route actions.
+     * 
+     * @return null|\Closure
+     */
+    public function dispatchRoute(): ?\Closure
     {
         if(!$route = $this->currentRoute) {
             throw new NotFoundException(sprintf(
@@ -112,5 +155,24 @@ class RouteCollection
         }
 
         $obController->{$method}(...$route->closureReturn());
+
+        return null;
+    }
+
+    /**
+     * Method responsible for returning all routes
+     * from the http method passed in the parameter.
+     * 
+     * @param string $method
+     * 
+     * @return null|array
+     */
+    public function getRouteOf(String $method)
+    {
+        $method = strtoupper($method);
+
+        if(!isset($this->routes[$method])) return null;
+
+        return $this->routes[$method];
     }
 }

@@ -223,9 +223,9 @@ class RouteManager
     /**
      * Get the route name.
      * 
-     * @return mixed
+     * @return null|string
      */
-    public function getName(): mixed
+    public function getName(): ?String
     {
         return $this->name;
     }

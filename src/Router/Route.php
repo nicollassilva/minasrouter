@@ -21,6 +21,8 @@ abstract class Route extends RouteCollection
     /**
      * @param string $projectUrl
      * @param string $separator = null
+     * 
+     * @return void
      */
     public static function start(String $projectUrl, String $separator = null): void
     {
@@ -37,7 +39,10 @@ abstract class Route extends RouteCollection
     }
 
     /**
-     * @param string $projectUrl
+     * @param string $uri
+     * @param \Closure|array|string $callback
+     * 
+     * @return \MinasRouter\Router\RouterManager
      */
     public static function get(String $uri, $callback)
     {
@@ -96,7 +101,7 @@ abstract class Route extends RouteCollection
      */
     public static function any(String $uri, $callback)
     {
-        return self::$collection->addMultipleRoutes($uri, $callback);
+        return self::$collection->addMultipleHttpRoutes($uri, $callback);
     }
 
     /**
@@ -107,7 +112,7 @@ abstract class Route extends RouteCollection
      */
     public static function match(Array $methods, String $uri, $callback)
     {
-        return self::$collection->addMultipleRoutes($uri, $callback, $methods);
+        return self::$collection->addMultipleHttpRoutes($uri, $callback, $methods);
     }
 
     public static function __callStatic($method, $arguments)
@@ -116,7 +121,7 @@ abstract class Route extends RouteCollection
     }
 
     /**
-     * Execute the routers
+     * Execute the routers.
      * 
      * @return void
      */

@@ -17,22 +17,36 @@ class Request
     private $headers;
 
     public function __construct(
-        String $fullUrl, 
-        String $route, 
-        Array $routeParams
+        String $fullUrl,
+        String $route,
+        array $routeParams
     ) {
-        $this->fullUrl = $fullUrl . $_SERVER['REQUEST_URI'];
+        $this->fullUrl = $fullUrl . ($_SERVER['REQUEST_URI'] ?? '/');
 
         $this->httpMethod = $_SERVER['REQUEST_METHOD'] ?? '';
         $this->queryStrings = $_GET;
 
-        $this->headers = getallheaders();
+        $this->headers = $this->resolveHeaders();
 
         $this->resolveRouteData($route, $routeParams);
 
-        if($this->httpMethod != 'GET') {
+        if ($this->httpMethod != 'GET') {
             $this->setData();
         }
+    }
+
+    protected function resolveHeaders()
+    {
+        $headers = [];
+
+        foreach ($_SERVER as $name => $value) {
+            if (substr($name, 0, 5) == 'HTTP_') {
+                $index = str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))));
+                $headers[$index] = $value;
+            }
+        }
+
+        return $headers;
     }
 
     /**
@@ -56,7 +70,7 @@ class Request
      */
     public function getQueryString(?String $name = null)
     {
-        if($name && isset($this->queryStrings[$name])) {
+        if ($name && isset($this->queryStrings[$name])) {
             return $this->queryStrings[$name];
         }
 
@@ -71,19 +85,19 @@ class Request
      * 
      * @return void
      */
-    protected function resolveRouteData(String $route, Array $routeParams): void
+    protected function resolveRouteData(String $route, array $routeParams): void
     {
         $params = parse_url($this->fullUrl);
 
         $diff = array_diff(explode('/', $params['path']), explode('/', $route));
-        
+
         sort($diff);
 
-        if(!empty($diff)) {
-            foreach($routeParams as $index => $param) {
-                if(!isset($diff[$index])) return;
+        if (!empty($diff)) {
+            foreach ($routeParams as $index => $param) {
+                if (!isset($diff[$index])) return;
 
-                if($this->httpMethod != 'GET') {
+                if ($this->httpMethod != 'GET') {
                     $this->params[$param] = $diff[$index];
                     continue;
                 }
@@ -149,19 +163,19 @@ class Request
      */
     public function all(?String $except = null)
     {
-        if(!$except) {
+        if (!$except) {
             return $this->data;
         }
-        
+
         $allWithExcession = $this->data;
         $except = explode(',', $except);
 
-        $except = array_map(function($excession) {
+        $except = array_map(function ($excession) {
             return trim(rtrim($excession));
         }, $except);
 
-        foreach($except as $excession) {
-            if(!isset($this->data[$excession])) return;
+        foreach ($except as $excession) {
+            if (!isset($this->data[$excession])) return;
 
             unset($allWithExcession[$excession]);
         }
@@ -191,7 +205,7 @@ class Request
      */
     public function getHeaders(?String $header = null)
     {
-        if($header && isset($this->headers[$header])) {
+        if ($header && isset($this->headers[$header])) {
             return $this->headers[$header];
         }
 
