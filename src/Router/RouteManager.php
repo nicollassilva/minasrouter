@@ -108,9 +108,11 @@ class RouteManager
      * 
      * @return array
      */
-    protected function foundParameters($wordOnly = false): Array
+    protected function foundParameters($wordOnly = false, $originalRoute = false): Array
     {
-        preg_match_all("~\{\s*([a-zA-Z_][a-zA-Z0-9_-]*)\??\}~x", $this->route, $params, PREG_SET_ORDER);
+        $route = $originalRoute ? $this->originalRoute : $this->route;
+
+        preg_match_all("~\{\s*([a-zA-Z_][a-zA-Z0-9_-]*)\??\}~x", $route, $params, PREG_SET_ORDER);
 
         if($wordOnly) {
             $params = array_map(function($param) {
@@ -123,7 +125,9 @@ class RouteManager
 
     public function closureReturn()
     {
-        $params = array_values($this->request()->getParams());
+        $getParams = $this->request()->getParams() ?? array_flip($this->foundParameters(true, true));
+
+        $params = array_values($getParams);
 
         return [
             ...$params,

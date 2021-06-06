@@ -8,31 +8,26 @@ class Request
 
     private $httpMethod;
 
-    private $data;
+    private $data = [];
 
-    private $contentType;
+    private $queryStrings;
 
     private $params;
-
-    private $statusCode;
 
     private $headers;
 
     public function __construct(
         String $fullUrl, 
         String $route, 
-        Array $routeParams, 
-        Int $status = 200, 
-        String $contentType = 'text/html'
+        Array $routeParams
     ) {
         $this->fullUrl = $fullUrl . $_SERVER['REQUEST_URI'];
 
-        $this->statusCode = $status;
         $this->httpMethod = $_SERVER['REQUEST_METHOD'] ?? '';
+        $this->queryStrings = $_GET;
 
         $this->headers = getallheaders();
 
-        $this->setContentType($contentType);
         $this->resolveRouteData($route, $routeParams);
 
         if($this->httpMethod != 'GET') {
@@ -40,12 +35,43 @@ class Request
         }
     }
 
+    /**
+     * Method responsible for returning the
+     * route's dynamic parameters.
+     * 
+     * @return array
+     */
     public function getParams()
     {
         return $this->params ?? $this->data;
     }
 
-    protected function resolveRouteData(String $route, Array $routeParams)
+    /**
+     * Method responsible for returning one or all
+     * data coming from the params query ($_GET).
+     * 
+     * @return null|string $name = null
+     * 
+     * @return array|string
+     */
+    public function getQueryString(?String $name = null)
+    {
+        if($name && isset($this->queryStrings[$name])) {
+            return $this->queryStrings[$name];
+        }
+
+        return $this->queryStrings;
+    }
+
+    /**
+     * Method responsible for defining route data
+     * 
+     * @param string $route
+     * @param array $routeParams
+     * 
+     * @return void
+     */
+    protected function resolveRouteData(String $route, Array $routeParams): void
     {
         $params = parse_url($this->fullUrl);
 
@@ -67,6 +93,12 @@ class Request
         }
     }
 
+    /**
+     * Method responsible for assigning and handling
+     * the data coming from the web form.
+     * 
+     * @return void
+     */
     protected function setData()
     {
         $post = filter_input_array(INPUT_POST, FILTER_DEFAULT);
@@ -98,32 +130,23 @@ class Request
         return;
     }
 
+    /**
+     * Return the httpMethod.
+     * 
+     * @return string
+     */
     public function getMethod()
     {
         return $this->httpMethod;
     }
 
-    protected function setContentType(String $contentType): void
-    {
-        $this->contentType = $contentType;
-
-        $this->setHeader('Content-Type', $contentType);
-    }
-
-    protected function setHeader(String $key, String $value): void
-    {
-        $this->headers[$key] = $value;
-    }
-
-    protected function sendHeaders(): void
-    {
-        http_response_code($this->statusCode);
-
-        foreach ($this->headers as $header => $value) {
-            header("{$header}: {$value}");
-        }
-    }
-
+    /**
+     * Method responsible for returning all request data.
+     * 
+     * @param null|string $except = null
+     * 
+     * @return array|null
+     */
     public function all(?String $except = null)
     {
         if(!$except) {
@@ -145,5 +168,21 @@ class Request
         }
 
         return $this->data;
+    }
+
+    /**
+     * Method responsible for returning one or all header data.
+     * 
+     * @param string $header = null
+     * 
+     * @return array|string
+     */
+    public function getHeaders(?String $header = null)
+    {
+        if($header && isset($this->headers[$header])) {
+            return $this->headers[$header];
+        }
+
+        return $this->headers;
     }
 }
