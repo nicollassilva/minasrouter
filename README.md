@@ -18,14 +18,19 @@ Simple, fast and VERY functional. **MinasRouter** is a PHP routes component for 
 - Carries dynamic parameters to controller arguments
 - It has a **Request Class** to control and work with route data
 
+# Tests
+
+> You can check all tests done [here](https://github.com/nicollassilva/minasrouter/tree/master/tests).
+> Enjoy!
+
 # Installation
 
 MinasRouter is available via `Composer require`:
 
 ```json
-    "require" {
-        "nicollassilva/minasrouter": "1.0.*"
-    }
+"require" {
+    "nicollassilva/minasrouter": "1.0.*"
+}
 ```
 or run in **terminal**:
 
@@ -34,6 +39,21 @@ composer require nicollassilva/minasrouter
 ```
 
 # Documentation
+
+### 1. Configuration
+- [Apache](https://github.com/nicollassilva/minasrouter#apache)
+- [Nginx](https://github.com/nicollassilva/minasrouter#apache)
+### 2. Routes
+- [My first Route](https://github.com/nicollassilva/minasrouter#the-first-route)
+- [RESTfull Verbs](https://github.com/nicollassilva/minasrouter#restfull-verbs)
+* **Customization**
+- [Named routes](https://github.com/nicollassilva/minasrouter#named-routes)
+- [Dynamic parameters (required and optional)](https://github.com/nicollassilva/minasrouter#dynamic-parameters-required-and-optional)
+- [Validating a dynamic parameter](https://github.com/nicollassilva/minasrouter#validating-a-dynamic-parameter)
+* **Others methods**
+- [Route redirect](https://github.com/nicollassilva/minasrouter#route-redirect)
+
+# Introduction
 
 > Para começar a usar o MinasRouter, todo o gerenciamento da navegação deverá ser redirecionado para o arquivo padrão de rotas do seu sistema, que fará todo o processo de tratamento das rotas e retornará o que foi por padrão configurado. Configure conforme os exemplos abaixo e de acordo com seu servidor.
 
@@ -88,13 +108,17 @@ To start the components:
     
 use MinasRouter\Router\Route;
 
-Route::start("http://yourdomain.com");
+// The second argument is optional. It separates the Controller and Method from the string
+// Example: "Controller@method"
+Route::start("http://yourdomain.com", "@");
 
 Route::get("/", function() {
     // ...
 });
 
-// You will put all your routes before this function.
+// ... all routes here
+
+// You will put all your routes before this function
 Route::execute();
 ```
 
@@ -139,6 +163,7 @@ Methods:
 | Function |   Parameter  |
 |:--------:|:------------:|
 |   name   | String $name |
+|    as    | String $name |
 
 Example:
 
@@ -146,6 +171,10 @@ Example:
 Route::get("/users/create", function() {
     // ...
 })->name("user.create");
+
+Route::get("/users/2", function() {
+    // ...
+})->as("user.show");
 ```
 
 ### Dynamic parameters (required and optional)
@@ -172,20 +201,30 @@ Route::get("/post/{id?}", function($id) {
 
 Methods:
 
-|  Function  |   Parameter   |   Parameter   |
-|:----------:|:-------------:|:-------------:|
-|    where   |     Array     |               |
-| whereParam | String $param | String $regex |
+|      Function     |   Parameter   | Parameter     |
+|:-----------------:|:-------------:|---------------|
+|       where       | Array $params |               |
+|     whereParam    | String $param | String $regex |
+|    whereNumber    | String $param |               |
+|     whereAlpha    | String $param |               |
+| whereAlphaNumeric | String $param |               |
+|     whereUuid     | String $param |               |
 
 Example:
 
 ```php
-Route::get("/user/{id}", [\App\Http\Controllers\UserController::class, "show"])
-    ->name("user.show")->where(["id" => "[0-9]+"]);
+Route::get("/user/{id}", [\App\Controllers\UserController::class, "show"])
+    ->name("user.show")
+    ->where(["id" => "[0-9]+"]);
 
 // whereParam is alias of where method
-Route::get("/profile/{slug}", [\App\Http\Controllers\UserController::class, "profile"])
-    ->name("user.profile")->whereParam("id", "[0-9]+");
+Route::get("/profile/{slug}", [\App\Controllers\UserController::class, "profile"])
+    ->name("user.profile")
+    ->whereParam("id", "[0-9]+");
+
+Route::get("/book/{id}", [\App\Controllers\BookController::class, "show"])
+    ->name("book.show")
+    ->whereNumber("id");
 ```
 
 ### Route redirect
@@ -211,6 +250,6 @@ Route::permanentRedirect("/here", "/there");
 // You can return an existing route
 Route::redirect("/index", "web.index");
 ```
-> OBS: Tenha cuidado se você redirecionar para uma rota existente, porque se ela tiver argumentos dinâmicos, ela retornará todo o regex.
+> OBS: Tenha cuidado caso queira redirecionar para uma rota existente, se nela conter argumentos dinâmicos, ela retornará todo o regex e irá causar erro.
 
-Be careful if you redirect to an existing route, because if it has dynamic arguments, it will return the entire regex.
+Be careful you redirect to an existing route, because if it has dynamic arguments, it will return the entire regex and error returned.

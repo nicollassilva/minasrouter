@@ -3,9 +3,11 @@
 namespace MinasRouter\Router;
 
 use MinasRouter\Http\Request;
+use MinasRouter\Traits\RouteManagerUtils;
 
 class RouteManager
 {
+    use RouteManagerUtils;
 
     /** @var string */
     protected $separator;
@@ -147,38 +149,6 @@ class RouteManager
     }
 
     /**
-     * Method responsible for defining the regular
-     * expressions of dynamic parameters.
-     * 
-     * @param array $matches
-     * 
-     * @return \MinasRouter\Router\RouteManager
-     */
-    public function where(array $matches): RouteManager
-    {
-        array_map(function ($key, $value) {
-            $this->where[$key] = $value;
-        }, array_keys($matches), $matches);
-
-        return $this;
-    }
-
-    /**
-     * Alias of the where method, but only for one parameter
-     * 
-     * @param string $param
-     * @param string $value
-     * 
-     * @return \MinasRouter\Router\RouteManager
-     */
-    public function whereParam(String $param, String $value): RouteManager
-    {
-        $this->where[$param] = $value;
-
-        return $this;
-    }
-
-    /**
      * Method responsible for separating and defining the class and method,
      * or the anonymous function of the route.
      * 
@@ -205,20 +175,6 @@ class RouteManager
     }
 
     /**
-     * Set the name of route.
-     * 
-     * @param string
-     * 
-     * @return \MinasRouter\Router\RouteManager
-     */
-    public function name(String $name): RouteManager
-    {
-        $this->name = $name;
-
-        return $this;
-    }
-
-    /**
      * Get the route name.
      * 
      * @return null|string
@@ -239,6 +195,19 @@ class RouteManager
     }
 
     /**
+     * Get the route action and handler.
+     * 
+     * @return array
+     */
+    public function getCompleteAction()
+    {
+        return [
+            $this->getHandler(),
+            $this->getAction()
+        ];
+    }
+
+    /**
      * Get the route handler.
      * 
      * @return mixed|\Closure|string
@@ -256,18 +225,6 @@ class RouteManager
     public function request(): Request
     {
         return $this->request;
-    }
-
-    /**
-     * Alias of the name method.
-     * 
-     * @param string
-     * 
-     * @return \MinasRouter\Router\RouteManager
-     */
-    public function as(String $name): RouteManager
-    {
-        return $this->name($name);
     }
 
     /**

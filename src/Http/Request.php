@@ -124,11 +124,11 @@ class Request
                 if (!isset($diff[$index])) return;
 
                 if ($this->httpMethod != 'GET') {
-                    $this->params[$param] = $diff[$index];
+                    $this->params[$param] = rawurldecode($diff[$index]);
                     continue;
                 }
 
-                $this->data[$param] = $diff[$index];
+                $this->data[$param] = rawurldecode($diff[$index]);
             }
         }
     }

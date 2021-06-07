@@ -112,13 +112,23 @@ class RouteCollection
         );
     }
 
-    public function getRouteByName(String $routeName, $httpMethod = null)
+    /**
+     * Method responsible for returning a route
+     * by the name attribute.
+     * 
+     * @param string $routeName
+     * @param null|string $httpMethod = null
+     * 
+     * @return \MinasRouter\Router\RouteManager|null
+     */
+    public function getRouteByName(String $routeName, $httpMethod = null): ?RouteManager
     {
         $routes = $this->routes;
+        $httpMethod = !$httpMethod ?: strtoupper($httpMethod);
 
         unset($routes["REDIRECT"]);
 
-        if ($httpMethod) {
+        if ($httpMethod && isset($this->routes[$httpMethod])) {
             $routes = $this->routes[$httpMethod];
         }
 
@@ -154,7 +164,7 @@ class RouteCollection
         $redirectRoute = $this->baseUrl;
 
         if($route instanceof \MinasRouter\Router\RouteManager) {
-            $redirectRoute .= $route->getRoute();
+            $redirectRoute .= rtrim($route->getRoute(), '(\/)?');
         } else {
             $redirectRoute .= $this->fixRouterUri($route["redirect"]);
         }
@@ -212,8 +222,7 @@ class RouteCollection
             );
         }
 
-        $controller = $route->getHandler();
-        $method = $route->getAction();
+        [$controller, $method] = $route->getCompleteAction();
 
         if ($method instanceof \Closure) {
             $this->setHttpCode();
@@ -252,13 +261,29 @@ class RouteCollection
         return null;
     }
 
+    /**
+     * Method responsible for returning an
+     * http method by slug.
+     * 
+     * @param string $slug
+     * 
+     * @return null|int
+     */
     protected function getHttpCode(String $slug)
     {
-        if (!isset($this->httpCodes[$slug])) return;
+        if (!isset($this->httpCodes[$slug])) return null;
 
         return $this->httpCodes[$slug];
     }
 
+    /**
+     * Method responsible for rendering
+     * the http method on the page.
+     * 
+     * @param int $code = 200
+     * 
+     * @return void
+     */
     protected function setHttpCode(Int $code = 200)
     {
         http_response_code($code);
