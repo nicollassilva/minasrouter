@@ -2,13 +2,15 @@
 
 namespace MinasRouter\Router;
 
+use MinasRouter\Traits\RouterHelpers;
 use MinasRouter\Traits\RouteManagement;
 use MinasRouter\Exceptions\NotFoundException;
 use MinasRouter\Exceptions\BadMethodCallException;
+use MinasRouter\Exceptions\MethodNotAllowedException;
 
 class RouteCollection
 {
-    use RouteManagement;
+    use RouteManagement, RouterHelpers;
 
     protected $actionSeparator;
 
@@ -33,15 +35,14 @@ class RouteCollection
         "PUT" => [],
         "PATCH" => [],
         "DELETE" => [],
-        "ANY" => [],
-        "MATCH" => []
+        "REDIRECT" => []
     ];
 
     public function __construct(String $separator, String $baseUrl)
     {
         $this->actionSeparator = $separator;
         $this->baseUrl = $baseUrl;
-        $this->currentUri = filter_input(INPUT_GET, "route", FILTER_DEFAULT) ?? '/';
+        $this->currentUri = filter_input(INPUT_GET, "route", FILTER_DEFAULT) ?? "/";
     }
 
     /**
@@ -56,7 +57,9 @@ class RouteCollection
      */
     public function addRoute(String $method, $uri, $callback)
     {
-        if(array_key_exists($method, $this->routes)) {
+        $uri = $this->fixRouterUri($uri);
+
+        if (array_key_exists($method, $this->routes)) {
             return $this->routes[$method][$uri] = $this->addRouter($uri, $callback);
         }
     }
@@ -71,19 +74,24 @@ class RouteCollection
      * 
      * @return \MinasRouter\Router\RouteManager
      */
-    public function addMultipleHttpRoutes(String $uri, $callback, ?Array $methods = null)
+    public function addMultipleHttpRoutes(String $uri, $callback, ?array $methods = null)
     {
-        if(!$methods) {
+        if (!$methods) {
             $methods = array_keys($this->routes);
         }
 
-        $methods = array_map('strtoupper', $methods);
+        $methods = array_map("strtoupper", $methods);
 
-        array_map(function($method) use ($uri, $callback) {
+        array_map(function ($method) use ($uri, $callback) {
             $this->routes[$method][$uri] = $this->addRouter($uri, $callback);
         }, $methods);
     }
-    
+
+    public function addRedirectRoute(String $uri, String $redirect, Int $httpCode)
+    {
+        $this->routes["REDIRECT"][$this->fixRouterUri($uri)] = $this->addRedirectRouter($redirect, $httpCode);
+    }
+
     /**
      * Method responsible for handling method
      * calls that do not exist in the class.
@@ -91,13 +99,68 @@ class RouteCollection
      * @param string $method
      * @param array $arguments
      * 
-     * @return \MinasRouter\Exceptions\BadMethodCallException
+     * @return void
      */
-    public function __call($method, $arguments): BadMethodCallException
+    public function __call($method, $arguments)
     {
-        throw new BadMethodCallException(sprintf(
-            "Method [%s::%s] doesn't exist.", static::class, $method
-        ), $this->httpCodes["badRequest"]);
+        $this->throwException(
+            "badRequest",
+            BadMethodCallException::class,
+            "Method [%s::%s] doesn't exist.",
+            static::class,
+            $method
+        );
+    }
+
+    public function getRouteByName(String $routeName, $httpMethod = null)
+    {
+        $routes = $this->routes;
+
+        unset($routes["REDIRECT"]);
+
+        if ($httpMethod) {
+            $routes = $this->routes[$httpMethod];
+        }
+
+        $route = array_filter($routes, function ($routeInspected) use ($routeName) {
+            if(is_array($routeInspected)) {
+                foreach($routeInspected as $route) {
+                    return $route->getName() === $routeName;
+                }
+            }
+
+            if($routeInspected instanceof \MinasRouter\Router\RouteManager) {
+                return $routeInspected->getName() === $routeName;
+            }
+        });
+
+        if(!$route) return null;
+
+        $route = array_shift($route);
+
+        if(!$route instanceof \MinasRouter\Router\RouteManager) {
+            $route = array_shift($route);
+        }
+
+        return $route;
+    }
+
+    /**
+     * Method responsible for redirecting to an
+     * existing route or a uri.
+     */
+    protected function redirectRoute($route, $permanent = false)
+    {
+        $redirectRoute = $this->baseUrl;
+
+        if($route instanceof \MinasRouter\Router\RouteManager) {
+            $redirectRoute .= $route->getRoute();
+        } else {
+            $redirectRoute .= $this->fixRouterUri($route["redirect"]);
+        }
+
+        header("Location: {$redirectRoute}", true, $permanent ? 301 : 302);
+        exit();
     }
 
     /**
@@ -110,7 +173,17 @@ class RouteCollection
     {
         $this->currentRoute = null;
 
-        foreach ($this->routes[$_SERVER['REQUEST_METHOD']] as $route) {
+        if (array_key_exists($currentRoute = $this->fixRouterUri($this->currentUri), $this->routes["REDIRECT"])) {
+            $route = $this->routes["REDIRECT"][$currentRoute];
+            $redirectRoute = $this->getRouteByName($route["redirect"]);
+
+            $this->redirectRoute(
+                $redirectRoute ?? $route,
+                $route["permanent"]
+            );
+        }
+
+        foreach ($this->routes[$_SERVER["REQUEST_METHOD"]] as $route) {
             if (preg_match("~^" . $route->getRoute() . "$~", $this->currentUri)) {
                 $this->currentRoute = $route;
             }
@@ -127,36 +200,68 @@ class RouteCollection
      */
     public function dispatchRoute(): ?\Closure
     {
-        if(!$route = $this->currentRoute) {
-            throw new NotFoundException(sprintf(
-                    "Route [%s] with method [%s] not found,", $_SERVER['REQUEST_URI'], $_SERVER['REQUEST_METHOD']
-                ), $this->httpCodes['notFound']);
+        if (!$route = $this->currentRoute) {
+            $this->setHttpCode($this->httpCodes["notFound"]);
+
+            $this->throwException(
+                "notFound",
+                NotFoundException::class,
+                "Route [%s] with method [%s] not found.",
+                $_SERVER["REQUEST_URI"],
+                $_SERVER["REQUEST_METHOD"]
+            );
         }
 
         $controller = $route->getHandler();
         $method = $route->getAction();
 
-        if($method instanceof \Closure) {
+        if ($method instanceof \Closure) {
+            $this->setHttpCode();
+
             return call_user_func($route->getAction(), ...$route->closureReturn());
         }
 
-        if(!class_exists($controller)) {
-            throw new BadMethodCallException(sprintf(
-                "Class [%s::%s] doesn't exist.", $controller, $method
-            ), $this->httpCodes["badRequest"]);
+        if (!class_exists($controller)) {
+            $this->setHttpCode($this->httpCodes["badRequest"]);
+
+            $this->throwException(
+                "badRequest",
+                BadMethodCallException::class,
+                "Class [%s::%s] doesn't exist.",
+                $controller,
+                $method
+            );
         }
 
         $obController = new $controller;
 
-        if(!method_exists($obController, $method)) {
-            throw new MethodNotAllowedException(sprintf(
-                "Method [%s::%s] doesn't exist.", $controller, $method
-            ), $this->httpCodes["methodNotAllowed"]);
+        if (!method_exists($obController, $method)) {
+            $this->setHttpCode($this->httpCodes["methodNotAllowed"]);
+
+            $this->throwException(
+                "methodNotAllowed",
+                MethodNotAllowedException::class,
+                "Method [%s::%s] doesn't exist.",
+                $controller,
+                $method
+            );
         }
 
         $obController->{$method}(...$route->closureReturn());
 
         return null;
+    }
+
+    protected function getHttpCode(String $slug)
+    {
+        if (!isset($this->httpCodes[$slug])) return;
+
+        return $this->httpCodes[$slug];
+    }
+
+    protected function setHttpCode(Int $code = 200)
+    {
+        http_response_code($code);
     }
 
     /**
@@ -171,7 +276,7 @@ class RouteCollection
     {
         $method = strtoupper($method);
 
-        if(!isset($this->routes[$method])) return null;
+        if (!isset($this->routes[$method])) return null;
 
         return $this->routes[$method];
     }

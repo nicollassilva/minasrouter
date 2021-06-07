@@ -83,15 +83,15 @@ final class RouteTest extends TestCase
          ->whereParam('id', '[0-9a-z]+');
 
         $this->assertTrue(
-                $route->getRoute() === '/profile/([0-9]+)'
+                $route->getRoute() === '/profile/([0-9]+)(\/)?'
             );
 
         $this->assertTrue(
-                $routeTwo->getRoute() === '/profile/([a-z0-9A-Z\-\_]+)/avatar'
+                $routeTwo->getRoute() === '/profile/([a-z0-9A-Z\-\_]+)/avatar(\/)?'
             );
 
         $this->assertTrue(
-                $routeThree->getRoute() === '/profile/([0-9a-z]+)'
+                $routeThree->getRoute() === '/profile/([0-9a-z]+)(\/)?'
             );
     }
 

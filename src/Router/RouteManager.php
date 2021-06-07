@@ -9,7 +9,7 @@ class RouteManager
 
     /** @var string */
     protected $separator;
-    
+
     /** @var string */
     protected $name;
 
@@ -48,9 +48,11 @@ class RouteManager
         $this->separator = $separator;
 
         $this->request = new Request(
-                $this->fullUrl, $this->route, $this->foundParameters(true)
-            );
-        
+            $this->fullUrl,
+            $this->route,
+            $this->foundParameters(true)
+        );
+
         $this->compileAction($callback);
     }
 
@@ -74,18 +76,18 @@ class RouteManager
     {
         $parameters = $this->foundParameters();
 
-        foreach($parameters as $parameter) {
+        foreach ($parameters as $parameter) {
             $realRegex = $this->getWhere($parameter[1]) ?? $this->defaultRegex;
 
-            if(preg_match("/\?/", $parameter[0])) {
+            if (preg_match("/\?/", $parameter[0])) {
                 $this->route = str_replace("/{$parameter[0]}", "(\/)?({$realRegex})?", $this->route);
                 continue;
             }
-            
+
             $this->route = str_replace("{$parameter[0]}", "({$realRegex})", $this->route);
         }
-    
-        return $this->route;
+
+        return $this->route . '(\/)?';
     }
 
     /**
@@ -98,7 +100,7 @@ class RouteManager
      */
     protected function getWhere(String $param): ?String
     {
-        if(!isset($this->where[$param])) return null;
+        if (!isset($this->where[$param])) return null;
 
         return $this->where[$param];
     }
@@ -108,14 +110,14 @@ class RouteManager
      * 
      * @return array
      */
-    protected function foundParameters($wordOnly = false, $originalRoute = false): Array
+    protected function foundParameters($wordOnly = false, $originalRoute = false): array
     {
         $route = $originalRoute ? $this->originalRoute : $this->route;
 
         preg_match_all("~\{\s*([a-zA-Z_][a-zA-Z0-9_-]*)\??\}~x", $route, $params, PREG_SET_ORDER);
 
-        if($wordOnly) {
-            $params = array_map(function($param) {
+        if ($wordOnly) {
+            $params = array_map(function ($param) {
                 return $param[1];
             }, $params);
         }
@@ -129,18 +131,14 @@ class RouteManager
      * 
      * @return array
      */
-    public function closureReturn(): Array
+    public function closureReturn(): array
     {
         $getParams = $this->request()->getParams();
         $dinamycParameters = array_fill_keys($this->foundParameters(true, true), null);
 
-        if($this->request()->getMethod() == 'GET'){
-            $params = array_values(
-                array_merge($dinamycParameters, $getParams)
-            );
-        } else {
-            $params = [];
-        }
+        $params = array_values(
+            array_merge($dinamycParameters, $getParams)
+        );
 
         return [
             ...$params,
@@ -156,9 +154,9 @@ class RouteManager
      * 
      * @return \MinasRouter\Router\RouteManager
      */
-    public function where(Array $matches): RouteManager
+    public function where(array $matches): RouteManager
     {
-        array_map(function($key, $value) {
+        array_map(function ($key, $value) {
             $this->where[$key] = $value;
         }, array_keys($matches), $matches);
 
@@ -188,16 +186,16 @@ class RouteManager
      */
     private function compileAction($callback): void
     {
-        if($callback instanceof \Closure) {
+        if ($callback instanceof \Closure) {
             $this->action = $callback;
             return;
         }
-        
-        if(is_string($callback)) {
+
+        if (is_string($callback)) {
             [$handler, $action] = explode($this->separator, $callback);
         }
 
-        if(is_array($callback)) {
+        if (is_array($callback)) {
             $handler = $callback[0];
             $action = $callback[1];
         }

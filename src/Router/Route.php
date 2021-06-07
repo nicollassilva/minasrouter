@@ -110,6 +110,28 @@ abstract class Route extends RouteCollection
      * 
      * @return \MinasRouter\Router\RouterManager
      */
+    public static function redirect(String $uri, String $redirect, Int $httpCode = 302)
+    {
+        return self::$collection->addRedirectRoute($uri, $redirect, $httpCode);
+    }
+
+    /**
+     * @param string $uri
+     * @param \Closure|array $callback
+     * 
+     * @return \MinasRouter\Router\RouterManager
+     */
+    public static function permanentRedirect(String $uri, String $redirect)
+    {
+        return self::$collection->addRedirectRoute($uri, $redirect, 301);
+    }
+
+    /**
+     * @param string $uri
+     * @param \Closure|array $callback
+     * 
+     * @return \MinasRouter\Router\RouterManager
+     */
     public static function match(Array $methods, String $uri, $callback)
     {
         return self::$collection->addMultipleHttpRoutes($uri, $callback, $methods);

@@ -25,6 +25,10 @@ class Request
 
         $this->httpMethod = $_SERVER['REQUEST_METHOD'] ?? '';
         $this->queryStrings = $_GET;
+        
+        if(isset($this->queryStrings["route"])) {
+            unset($this->queryStrings["route"]);
+        }
 
         $this->headers = $this->resolveHeaders();
 
@@ -78,6 +82,28 @@ class Request
     }
 
     /**
+     * Returns a property that does not exist in the class,
+     * usually they are indexes of the route array. Returns null
+     * if this index/property does not exist.
+     * 
+     * @param string $data
+     * 
+     * @return string|null|array
+     */
+    public function __get(String $data)
+    {
+        if(isset($this->data[$data])) {
+            return $this->data[$data];
+        }
+
+        if(isset($this->queryStrings[$data])) {
+            return $this->queryStrings[$data];
+        }
+
+        return null;
+    }
+
+    /**
      * Method responsible for defining route data
      * 
      * @param string $route
@@ -91,7 +117,7 @@ class Request
 
         $diff = array_diff(explode('/', $params['path']), explode('/', $route));
 
-        sort($diff);
+        $diff = array_values($diff);
 
         if (!empty($diff)) {
             foreach ($routeParams as $index => $param) {
