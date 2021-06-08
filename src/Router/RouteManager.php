@@ -16,6 +16,15 @@ class RouteManager
     protected $name;
 
     /** @var string */
+    private $defaultName;
+
+    /** @var string */
+    private $defaultNamespace;
+
+    /** @var object */
+    protected $group;
+
+    /** @var string */
     protected $route;
 
     /** @var string */
@@ -42,12 +51,13 @@ class RouteManager
     /** @var object */
     protected $request;
 
-    public function __construct($fullUrl, $uri, $callback, String $separator)
+    public function __construct($fullUrl, $uri, $callback, String $separator, ?RouteGroups $group = null)
     {
         $this->fullUrl = $fullUrl;
         $this->route = $uri;
         $this->originalRoute = $uri;
         $this->separator = $separator;
+        $this->group = $group;
 
         $this->request = new Request(
             $this->fullUrl,
@@ -55,7 +65,34 @@ class RouteManager
             $this->foundParameters(true)
         );
 
+        $this->compileGroupData();
         $this->compileAction($callback);
+    }
+
+    /**
+     * Method responsible for returning the current group.
+     * 
+     * @return null|\MinasRouter\Router\RouteGroups
+     */
+    public function getGroup()
+    {
+        return $this->group;
+    }
+
+    /**
+     * Method responsible for defining the
+     * settings of the group the is part of.
+     * 
+     * @return null
+     */
+    private function compileGroupData()
+    {
+        if(!is_a($this->group, RouteGroups::class)) return null;
+
+        $this->defaultName = $this->name = $this->group->name;
+        $this->defaultNamespace = $this->group->namespace;
+
+        return null;
     }
 
     /**
@@ -170,8 +207,48 @@ class RouteManager
             $action = $callback[1];
         }
 
-        $this->handler = $handler;
+        $this->handler = $this->resolveHandler($handler);
         $this->action = $action;
+    }
+    
+    /**
+     * Method responsible for returning the correct controller,
+     * including the namespace of a group.
+     * 
+     * @param string $handler
+     * 
+     * @return string
+     */
+    private function resolveHandler(String $handler)
+    {
+        if(!$this->defaultNamespace) {
+            return $handler;
+        }
+
+        $namespace = $this->parseDefaultString($this->defaultNamespace);
+        
+        return $namespace . $this->parseDefaultString($handler);
+    }
+
+    /**
+     * Method responsible for applying the default
+     * rule in the controller string.
+     * 
+     * @param string $handler
+     * 
+     * @return string
+     */
+    private function parseDefaultString(String $handler)
+    {
+        if (!preg_match("/^\\\/", $handler, $match)) {
+            $handler = "\\{$handler}";
+        }
+
+        if (preg_match("/\/$/", $handler, $match)) {
+            $handler = rtrim($handler, "/");
+        }
+
+        return $handler;
     }
 
     /**

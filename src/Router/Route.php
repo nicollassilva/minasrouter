@@ -2,6 +2,7 @@
 
 namespace MinasRouter\Router;
 
+use MinasRouter\Router\RouteGroups;
 use MinasRouter\Router\RouteCollection;
 
 abstract class Route extends RouteCollection
@@ -28,14 +29,14 @@ abstract class Route extends RouteCollection
     {
         self::$projectUrl = rtrim($projectUrl, '/');
 
-        if($separator) {
+        if ($separator) {
             self::$separator = $separator;
         }
 
         self::$collection = new parent(
-                self::$separator,
-                self::$projectUrl
-            );
+            self::$separator,
+            self::$projectUrl
+        );
     }
 
     /**
@@ -70,7 +71,7 @@ abstract class Route extends RouteCollection
     {
         return self::$collection->addRoute("PUT", $uri, $callback);
     }
-    
+
     /**
      * @param string $uri
      * @param \Closure|array $callback
@@ -132,7 +133,7 @@ abstract class Route extends RouteCollection
      * 
      * @return \MinasRouter\Router\RouterManager
      */
-    public static function match(Array $methods, String $uri, $callback)
+    public static function match(array $methods, String $uri, $callback)
     {
         return self::$collection->addMultipleHttpRoutes($uri, $callback, $methods);
     }
@@ -152,8 +153,32 @@ abstract class Route extends RouteCollection
         self::$collection->run();
     }
 
-    public static function middlewares(Array $middlewares)
+    private static function newRouteGroup()
     {
+        $group = (new RouteGroups(self::$collection));
 
+        self::$collection->defineGroup($group);
+
+        return $group;
+    }
+
+    public static function namespace(String $namespace)
+    {
+        return self::newRouteGroup()->namespace($namespace);
+    }
+
+    public static function prefix(String $prefix)
+    {
+        return self::newRouteGroup()->prefix($prefix);
+    }
+
+    public static function middleware(String $middleware)
+    {
+        return self::newRouteGroup()->middlewares($middleware);
+    }
+
+    public static function name(String $name)
+    {
+        return self::newRouteGroup()->name($name);
     }
 }

@@ -160,10 +160,10 @@ final class RouteTest extends TestCase
         $collection = Route::$collection;
 
         $methods = [
-            "number" => $collection->getRouteByName("method.number", "delete"),
-            "alpha" => $collection->getRouteByName("method.alpha", "get"),
-            "alphaNumeric" => $collection->getRouteByName("method.alphaNumeric", "patch"),
-            "uuid" => $collection->getRouteByName("method.uuid", "put")
+            "number" => $collection->getByName("method.number", "delete"),
+            "alpha" => $collection->getByName("method.alpha", "get"),
+            "alphaNumeric" => $collection->getByName("method.alphaNumeric", "patch"),
+            "uuid" => $collection->getByName("method.uuid", "put")
         ];
 
         $expectedMatchRegex = [

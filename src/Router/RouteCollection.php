@@ -2,6 +2,7 @@
 
 namespace MinasRouter\Router;
 
+use MinasRouter\Router\RouteGroups;
 use MinasRouter\Traits\RouterHelpers;
 use MinasRouter\Traits\RouteManagement;
 use MinasRouter\Exceptions\NotFoundException;
@@ -15,6 +16,8 @@ class RouteCollection
     protected $actionSeparator;
 
     protected $currentUri;
+
+    protected $currentGroup;
 
     protected $baseUrl;
 
@@ -46,6 +49,19 @@ class RouteCollection
     }
 
     /**
+     * Method responsible for defining the 
+     * group of current routes.
+     * 
+     * @param null|\MinasRouter\Router\RouteGroups $group = null
+     * 
+     * @return void
+     */
+    public function defineGroup(?RouteGroups $group = null): void
+    {
+        $this->currentGroup = $group;
+    }
+
+    /**
      * Method responsible for adding a
      * route to an http method.
      * 
@@ -57,7 +73,7 @@ class RouteCollection
      */
     public function addRoute(String $method, $uri, $callback)
     {
-        $uri = $this->fixRouterUri($uri);
+        $uri = $this->resolveRouterUri($uri);
 
         if (array_key_exists($method, $this->routes)) {
             return $this->routes[$method][$uri] = $this->addRouter($uri, $callback);
@@ -89,7 +105,9 @@ class RouteCollection
 
     public function addRedirectRoute(String $uri, String $redirect, Int $httpCode)
     {
-        $this->routes["REDIRECT"][$this->fixRouterUri($uri)] = $this->addRedirectRouter($redirect, $httpCode);
+        $uri = $this->resolveRouterUri($uri);
+
+        $this->routes["REDIRECT"][$uri] = $this->addRedirectRouter($redirect, $httpCode);
     }
 
     /**
@@ -121,7 +139,7 @@ class RouteCollection
      * 
      * @return \MinasRouter\Router\RouteManager|null
      */
-    public function getRouteByName(String $routeName, $httpMethod = null): ?RouteManager
+    public function getByName(String $routeName, $httpMethod = null): ?RouteManager
     {
         $routes = $this->routes;
         $httpMethod = !$httpMethod ?: strtoupper($httpMethod);
@@ -132,44 +150,62 @@ class RouteCollection
             $routes = $this->routes[$httpMethod];
         }
 
-        $route = array_filter($routes, function ($routeInspected) use ($routeName) {
-            if(is_array($routeInspected)) {
-                foreach($routeInspected as $route) {
-                    return $route->getName() === $routeName;
+        if (!is_array($routes)) return null;
+
+        $soughtRoute = null;
+
+        foreach ($routes as $verb) {
+            if (!$this->instanceOfManager($verb)) {
+                foreach ($verb as $route) {
+                    if ($route->getName() === $routeName) {
+                        $soughtRoute = $route;
+                        break;
+                    }
+                }
+            } else {
+                if ($verb->getName() === $routeName) {
+                    $soughtRoute = $verb;
+                    break;
                 }
             }
-
-            if($routeInspected instanceof \MinasRouter\Router\RouteManager) {
-                return $routeInspected->getName() === $routeName;
-            }
-        });
-
-        if(!$route) return null;
-
-        $route = array_shift($route);
-
-        if(!$route instanceof \MinasRouter\Router\RouteManager) {
-            $route = array_shift($route);
         }
 
-        return $route;
+        return $soughtRoute;
+    }
+
+    /**
+     * Method responsible for verifying if the
+     * object is an instance of RouteManager.
+     * 
+     * @param mixed $object
+     * 
+     * @return bool
+     */
+    public function instanceOfManager($object)
+    {
+        return is_a($object, RouteManager::class);
     }
 
     /**
      * Method responsible for redirecting to an
      * existing route or a uri.
+     * 
+     * @param object|array $route
+     * @param bool $permanent = false
      */
-    protected function redirectRoute($route, $permanent = false)
+    protected function redirectRoute(Array $routes, $permanent = false)
     {
         $redirectRoute = $this->baseUrl;
 
-        if($route instanceof \MinasRouter\Router\RouteManager) {
-            $redirectRoute .= rtrim($route->getRoute(), '(\/)?');
+        [$routeObject, $route] = $routes;
+
+        if ($this->instanceOfManager($routeObject)) {
+            $redirectRoute .= rtrim($routeObject->getRoute(), '(\/)?');
         } else {
-            $redirectRoute .= $this->fixRouterUri($route["redirect"]);
+            $redirectRoute .= $this->resolveRouterUri($route["redirect"]);
         }
 
-        header("Location: {$redirectRoute}", true, $permanent ? 301 : 302);
+        header("Location: {$redirectRoute}", true, $permanent ? 301 : $route["httpCode"]);
         exit();
     }
 
@@ -183,12 +219,12 @@ class RouteCollection
     {
         $this->currentRoute = null;
 
-        if (array_key_exists($currentRoute = $this->fixRouterUri($this->currentUri), $this->routes["REDIRECT"])) {
+        if (array_key_exists($currentRoute = $this->resolveRouterUri($this->currentUri), $this->routes["REDIRECT"])) {
             $route = $this->routes["REDIRECT"][$currentRoute];
-            $redirectRoute = $this->getRouteByName($route["redirect"]);
+            $redirectRoute = $this->getByName($route["redirect"]);
 
             $this->redirectRoute(
-                $redirectRoute ?? $route,
+                [$redirectRoute, $route],
                 $route["permanent"]
             );
         }

@@ -91,15 +91,21 @@ trait RouteManagerUtils
     }
 
     /**
-     * Set the name of route.
+     * Set the name of route. The second parameter
+     * when true will ignore the group prefix.
      * 
-     * @param string
+     * @param string $name
+     * @param bool $ignoreDefault
      * 
      * @return \MinasRouter\Router\RouteManager
      */
-    public function name(String $name): RouteManager
+    public function name(String $name, Bool $ignoreDefault = false): RouteManager
     {
-        $this->name = $name;
+        if($ignoreDefault) {
+            $this->name = $name;
+        } else {
+            $this->name = $this->defaultName . $name;
+        }
 
         return $this;
     }
@@ -107,7 +113,7 @@ trait RouteManagerUtils
     /**
      * Alias of the name method.
      * 
-     * @param string
+     * @param string $name
      * 
      * @return \MinasRouter\Router\RouteManager
      */

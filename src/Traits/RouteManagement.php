@@ -22,6 +22,11 @@ trait RouteManagement
 
     public function newRouter($uri, $callback)
     {
-        return new RouteManager($this->baseUrl, $uri, $callback, $this->actionSeparator);
+        // if($this->currentGroup instanceof \MinasRouter\Router\RouteGroups) {
+        //     $route->name($this->currentGroup->name);
+        //     $route->namespace($this->currentGroup->namespace);
+        // }
+
+        return new RouteManager($this->baseUrl, $uri, $callback, $this->actionSeparator, $this->currentGroup);
     }
 }

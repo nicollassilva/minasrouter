@@ -14,12 +14,25 @@ trait RouterHelpers
      */
     public function fixRouterUri(String $uri): String
     {
-        if(!preg_match("/^\//", $uri, $match)) {
+        if (!preg_match("/^\//", $uri, $match)) {
             $uri = "/{$uri}";
         }
 
-        if(preg_match("/\/$/", $uri, $match)) {
+        if (preg_match("/\/$/", $uri, $match)) {
             $uri = rtrim($uri, "/");
+        }
+
+        return $uri;
+    }
+
+    public function resolveRouterUri(String $uri): String
+    {
+        $uri = $this->fixRouterUri($uri);
+
+        if ($this->currentGroup instanceof \MinasRouter\Router\RouteGroups && $this->currentGroup->prefix) {
+            $prefix = $this->fixRouterUri($this->currentGroup->prefix);
+
+            return $prefix . $uri;
         }
 
         return $uri;
@@ -36,8 +49,8 @@ trait RouterHelpers
     private function throwException(String $httpCode, String $exception, String $message = "", ...$sprints): \Exception
     {
         throw new $exception(
-                sprintf($message, ...$sprints),
-                $this->getHttpCode($httpCode)
-            );
+            sprintf($message, ...$sprints),
+            $this->getHttpCode($httpCode)
+        );
     }
 }
