@@ -47,11 +47,20 @@ composer require nicollassilva/minasrouter
 - [My first Route](https://github.com/nicollassilva/minasrouter#the-first-route)
 - [RESTfull Verbs](https://github.com/nicollassilva/minasrouter#restfull-verbs)
 * **Customization**
-- [Named routes](https://github.com/nicollassilva/minasrouter#named-routes)
-- [Dynamic parameters (required and optional)](https://github.com/nicollassilva/minasrouter#dynamic-parameters-required-and-optional)
-- [Validating a dynamic parameter](https://github.com/nicollassilva/minasrouter#validating-a-dynamic-parameter)
-* **Others methods**
-- [Route redirect](https://github.com/nicollassilva/minasrouter#route-redirect)
+- [Named Routes](https://github.com/nicollassilva/minasrouter#named-routes)
+- [Dynamic Parameters (Required and Optional)](https://github.com/nicollassilva/minasrouter#dynamic-parameters-required-and-optional)
+- [Validating a Dynamic Parameter](https://github.com/nicollassilva/minasrouter#validating-a-dynamic-parameter)
+* **Route Groups**
+- [All Methods](https://github.com/nicollassilva/minasrouter#route-groups)
+- [Named Group](https://github.com/nicollassilva/minasrouter#named-group)
+- [Prefixed Group](https://github.com/nicollassilva/minasrouter#prefixed-group)
+- [Default Namespace Group](https://github.com/nicollassilva/minasrouter#default-namespace-group)
+- [Nested Group Methods](https://github.com/nicollassilva/minasrouter#nested-group-methods)
+* **Others Methods**
+- [Route Redirect](https://github.com/nicollassilva/minasrouter#route-redirect)
+
+### 3. Request Route
+- [Introduction](https://github.com/nicollassilva/minasrouter#request-route)
 
 # Introduction
 
@@ -227,6 +236,63 @@ Route::get("/book/{id}", [\App\Controllers\BookController::class, "show"])
     ->whereNumber("id");
 ```
 
+# Route Groups
+
+All methods:
+
+|  Function  |      Parameter      | ::function | ->function |
+|:----------:|:-------------------:|:----------:|:----------:|
+|  namespace |  String $namespace  |     Yes    |     Yes    |
+|   prefix   |    String $prefix   |     Yes    |     Yes    |
+|    name    |     String $name    |     Yes    |     Yes    |
+| middleware | String $middlewares |     Yes    |     Yes    |
+
+> Group methods can be called static way or normal, **don't forget to call a function group** to insert as routes inside the closure.
+
+Examples:
+
+### Named group
+
+```php
+Route::name("admin.")->group(function() {
+    Route::get("/", function() {
+        // admin.index
+    })->name("index");
+});
+```
+
+### Prefixed group
+
+```php
+Route::prefix("admin/")->group(function() {
+    Route::get("/index", function() {
+        // http://localhost/admin/index
+    })->name("index");
+});
+```
+
+### Default namespace group
+
+```php
+Route::namespace("App\Controllers")->group(function() {
+    Route::get("/user/{id}", ["User", "show"])->name("show");
+    // \App\Controllers\User
+});
+```
+
+### Nested group methods
+
+```php
+Route::namespace("App\Controllers\Admin")
+    ->name("admin.")
+    ->prefix("admin")
+    ->group(function() {
+    // ...
+});
+```
+
+# Others
+
 ### Route redirect
 
 Methods:
@@ -253,3 +319,5 @@ Route::redirect("/index", "web.index");
 > OBS: Tenha cuidado caso queira redirecionar para uma rota existente, se nela conter argumentos dinâmicos, ela retornará todo o regex e irá causar erro.
 
 Be careful you redirect to an existing route, because if it has dynamic arguments, it will return the entire regex and error returned.
+
+# Request Route
