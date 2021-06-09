@@ -7,6 +7,7 @@ use MinasRouter\Router\RouteGroups;
 trait RouterHelpers
 {
     protected abstract function getHttpCode(String $slug);
+    protected abstract function instanceof($object, $class);
     
     /**
      * Method responsible for removing the bars
