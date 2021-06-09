@@ -40,10 +40,10 @@ class RouteManager
     /** @var object */
     protected $middleware;
 
-    /** @var string */
+    /** @var string|\Closure */
     protected $action;
 
-    /** @var string */
+    /** @var string|null */
     protected $handler;
 
     /** @var array */
@@ -196,12 +196,14 @@ class RouteManager
      * or the anonymous function of the route.
      * 
      * @param string
+     * 
+     * @return null
      */
-    private function compileAction($callback): void
+    private function compileAction($callback)
     {
         if ($callback instanceof \Closure) {
             $this->action = $callback;
-            return;
+            return null;
         }
 
         if (is_string($callback)) {
@@ -215,6 +217,8 @@ class RouteManager
 
         $this->handler = $this->resolveHandler($handler);
         $this->action = $action;
+
+        return null;
     }
     
     /**

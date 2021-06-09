@@ -45,6 +45,8 @@ class RouteCollection
         "REDIRECT" => []
     ];
 
+    protected $formSpoofingMethods = ["PUT", "PATCH", "DELETE"];
+
     public function __construct(String $separator, String $baseUrl)
     {
         $this->actionSeparator = $separator;
@@ -232,7 +234,7 @@ class RouteCollection
     {
         $method = $_SERVER["REQUEST_METHOD"];
 
-        if ($method != "GET" && isset($_POST["_method"])) {
+        if (isset($_POST["_method"]) && in_array($_POST["_method"], $this->formSpoofingMethods)) {
             $this->requestMethod = $_POST["_method"];
             return null;
         }
@@ -261,6 +263,15 @@ class RouteCollection
         }
 
         $this->resolveRequestMethod();
+
+        if(!isset($this->routes[$this->requestMethod])) {
+            $this->throwException(
+                "badRequest",
+                BadMethodCallException::class,
+                "The HTTP method [%s] is not supported.",
+                $this->requestMethod
+            );
+        }
 
         foreach ($this->routes[$this->requestMethod] as $route) {
             if (preg_match("~^" . $route->getRoute() . "$~", $this->currentUri)) {

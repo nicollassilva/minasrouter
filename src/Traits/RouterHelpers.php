@@ -2,8 +2,12 @@
 
 namespace MinasRouter\Traits;
 
+use MinasRouter\Router\RouteGroups;
+
 trait RouterHelpers
 {
+    protected abstract function getHttpCode(String $slug);
+    
     /**
      * Method responsible for removing the bars
      * at the beginning and end of the route.
@@ -36,7 +40,7 @@ trait RouterHelpers
     {
         $uri = $this->fixRouterUri($uri);
 
-        if ($this->currentGroup instanceof \MinasRouter\Router\RouteGroups && $this->currentGroup->prefix) {
+        if ($this->instanceof($this->currentGroup, RouteGroups::class) && $this->currentGroup->prefix) {
             $prefix = $this->fixRouterUri($this->currentGroup->prefix);
 
             return $prefix . $uri;

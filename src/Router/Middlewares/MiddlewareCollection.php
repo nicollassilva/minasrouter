@@ -10,7 +10,7 @@ class MiddlewareCollection
     /** @var array */
     protected $middlewares = [];
 
-    /** @var array */
+    /** @var object */
     protected $currentRequest;
 
     /** @var array */
@@ -24,6 +24,13 @@ class MiddlewareCollection
         $this->middlewares = $middlewares;
     }
 
+    /**
+     * Return all middlewares of this route.
+     * 
+     * @param string $middleware = null
+     * 
+     * @return string|array
+     */
     public function get(String $middleware = null)
     {
         if ($middleware && is_array($this->middlewares) && isset($this->middlewares[$middleware])) {
@@ -36,7 +43,7 @@ class MiddlewareCollection
     /**
      * Method responsible for setting the Route's Request
      * 
-     * @param MinasRouter\Http\Request $request
+     * @param \MinasRouter\Http\Request $request
      * 
      * @return void
      */
@@ -58,6 +65,14 @@ class MiddlewareCollection
         $this->middlewares = $middlewares;
     }
 
+    /**
+     * Store a new middleware and return
+     * all middlewares of route.
+     * 
+     * @param string|array $middleware
+     * 
+     * @return string|array
+     */
     public function storeMiddleware($middleware)
     {
         if (is_string($middleware)) {
@@ -67,7 +82,14 @@ class MiddlewareCollection
         return $this->resolveLaterMiddleware($middleware);
     }
 
-    private function resolveLaterMiddleware(array $middleware)
+    /**
+     * Resolve the middlewares of individual route.
+     * 
+     * @param array $middleware
+     * 
+     * @return string|array
+     */
+    private function resolveLaterMiddleware(Array $middleware)
     {
         $currentMiddleware = $this->middlewares;
 
@@ -120,7 +142,7 @@ class MiddlewareCollection
      * 
      * @return void
      */
-    protected function resolveNestedMiddleware(array $middlewares): void
+    protected function resolveNestedMiddleware(Array $middlewares): void
     {
         $this->queue = array_map(function ($middleware) {
             $middleware = trim(rtrim($middleware));

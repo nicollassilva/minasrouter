@@ -44,7 +44,7 @@ abstract class Route extends RouteCollection
      * @param string $uri
      * @param \Closure|array|string $callback
      * 
-     * @return \MinasRouter\Router\RouterManager
+     * @return \MinasRouter\Router\RouteManager
      */
     public static function get(String $uri, $callback)
     {
@@ -55,7 +55,7 @@ abstract class Route extends RouteCollection
      * @param string $uri
      * @param \Closure|array $callback
      * 
-     * @return \MinasRouter\Router\RouterManager
+     * @return \MinasRouter\Router\RouteManager
      */
     public static function post(String $uri, $callback)
     {
@@ -66,7 +66,7 @@ abstract class Route extends RouteCollection
      * @param string $uri
      * @param \Closure|array $callback
      * 
-     * @return \MinasRouter\Router\RouterManager
+     * @return \MinasRouter\Router\RouteManager
      */
     public static function put(String $uri, $callback)
     {
@@ -77,7 +77,7 @@ abstract class Route extends RouteCollection
      * @param string $uri
      * @param \Closure|array $callback
      * 
-     * @return \MinasRouter\Router\RouterManager
+     * @return \MinasRouter\Router\RouteManager
      */
     public static function patch(String $uri, $callback)
     {
@@ -88,7 +88,7 @@ abstract class Route extends RouteCollection
      * @param string $uri
      * @param \Closure|array $callback
      * 
-     * @return \MinasRouter\Router\RouterManager
+     * @return \MinasRouter\Router\RouteManager
      */
     public static function delete(String $uri, $callback)
     {
@@ -99,7 +99,7 @@ abstract class Route extends RouteCollection
      * @param string $uri
      * @param \Closure|array $callback
      * 
-     * @return \MinasRouter\Router\RouterManager
+     * @return \MinasRouter\Router\RouteManager
      */
     public static function any(String $uri, $callback)
     {
@@ -110,7 +110,7 @@ abstract class Route extends RouteCollection
      * @param string $uri
      * @param \Closure|array $callback
      * 
-     * @return \MinasRouter\Router\RouterManager
+     * @return \MinasRouter\Router\RouteManager
      */
     public static function redirect(String $uri, String $redirect, Int $httpCode = 302)
     {
@@ -121,7 +121,7 @@ abstract class Route extends RouteCollection
      * @param string $uri
      * @param \Closure|array $callback
      * 
-     * @return \MinasRouter\Router\RouterManager
+     * @return \MinasRouter\Router\RouteManager
      */
     public static function permanentRedirect(String $uri, String $redirect)
     {
@@ -132,7 +132,7 @@ abstract class Route extends RouteCollection
      * @param string $uri
      * @param \Closure|array $callback
      * 
-     * @return \MinasRouter\Router\RouterManager
+     * @return \MinasRouter\Router\RouteManager
      */
     public static function match(array $methods, String $uri, $callback)
     {

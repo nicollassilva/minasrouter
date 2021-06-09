@@ -14,7 +14,7 @@ abstract class MiddlewareRoute
      * 
      * @return void
      */
-    public static function setMiddlewares($middlewares)
+    public static function setMiddlewares(Array $middlewares)
     {
         self::$setMiddlewares = $middlewares;
     }

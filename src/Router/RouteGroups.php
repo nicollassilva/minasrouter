@@ -19,8 +19,8 @@ class RouteGroups
     /** @var string */
     public $name;
 
-    /** @var string|array */
-    public $middlewares = [];
+    /** @var object */
+    public $middlewares;
 
     public function __construct(RouteCollection $collection)
     {

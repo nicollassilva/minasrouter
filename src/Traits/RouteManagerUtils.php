@@ -2,8 +2,6 @@
 
 namespace MinasRouter\Traits;
 
-use MinasRouter\Router\RouteManager;
-
 trait RouteManagerUtils
 {
     /**
@@ -12,9 +10,8 @@ trait RouteManagerUtils
      * 
      * @param array $matches
      * 
-     * @return \MinasRouter\Router\RouteManager
      */
-    public function where(array $matches): RouteManager
+    public function where(array $matches)
     {
         array_map(function ($key, $value) {
             $this->where[$key] = $value;
@@ -29,9 +26,8 @@ trait RouteManagerUtils
      * @param string $param
      * @param string $value
      * 
-     * @return \MinasRouter\Router\RouteManager
      */
-    public function whereParam(String $param, String $value): RouteManager
+    public function whereParam(String $param, String $value)
     {
         $this->where[$param] = $value;
 
@@ -44,9 +40,8 @@ trait RouteManagerUtils
      * 
      * @param string $param
      * 
-     * @return \MinasRouter\Router\RouteManager
      */
-    public function whereNumber(String $param): RouteManager
+    public function whereNumber(String $param)
     {
         return $this->whereParam($param, "[0-9]+");
     }
@@ -57,9 +52,8 @@ trait RouteManagerUtils
      * 
      * @param string $param
      * 
-     * @return \MinasRouter\Router\RouteManager
      */
-    public function whereAlpha(String $param): RouteManager
+    public function whereAlpha(String $param)
     {
         return $this->whereParam($param, "[a-zA-ZÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÒÓÔÕÖßÙÚÛÜÝŸÑàáâãäåçèéêëìíîïðòóôõöùúûüýÿñ]+");
     }
@@ -70,9 +64,8 @@ trait RouteManagerUtils
      * 
      * @param string $param
      * 
-     * @return \MinasRouter\Router\RouteManager
      */
-    public function whereAlphaNumeric(String $param): RouteManager
+    public function whereAlphaNumeric(String $param)
     {
         return $this->whereParam($param, "[a-zA-ZÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÒÓÔÕÖßÙÚÛÜÝŸÑàáâãäåçèéêëìíîïðòóôõöùúûüýÿñ0-9]+");
     }
@@ -83,9 +76,8 @@ trait RouteManagerUtils
      * 
      * @param string $param
      * 
-     * @return \MinasRouter\Router\RouteManager
      */
-    public function whereUuid(String $param): RouteManager
+    public function whereUuid(String $param)
     {
         return $this->whereParam($param, "(?i)[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}");
     }
@@ -97,9 +89,8 @@ trait RouteManagerUtils
      * @param string $name
      * @param bool $ignoreDefault
      * 
-     * @return \MinasRouter\Router\RouteManager
      */
-    public function name(String $name, Bool $ignoreDefault = false): RouteManager
+    public function name(String $name, Bool $ignoreDefault = false)
     {
         if($ignoreDefault) {
             $this->name = $name;
@@ -115,9 +106,8 @@ trait RouteManagerUtils
      * 
      * @param string $name
      * 
-     * @return \MinasRouter\Router\RouteManager
      */
-    public function as(String $name): RouteManager
+    public function as(String $name)
     {
         return $this->name($name);
     }
