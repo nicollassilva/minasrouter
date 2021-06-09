@@ -4,6 +4,7 @@ namespace MinasRouter\Router;
 
 use MinasRouter\Http\Request;
 use MinasRouter\Traits\RouteManagerUtils;
+use MinasRouter\Router\Middlewares\MiddlewareCollection;
 
 class RouteManager
 {
@@ -36,8 +37,8 @@ class RouteManager
     /** @var string */
     protected $defaultRegex = "[^/]+";
 
-    /** @var array */
-    protected $middlewares = [];
+    /** @var object */
+    protected $middleware;
 
     /** @var string */
     protected $action;
@@ -91,6 +92,10 @@ class RouteManager
 
         $this->defaultName = $this->name = $this->group->name;
         $this->defaultNamespace = $this->group->namespace;
+
+        if(is_a($this->group->middlewares, MiddlewareCollection::class)) {
+            $this->middleware = $this->group->middlewares;
+        }
 
         return null;
     }
@@ -305,6 +310,16 @@ class RouteManager
     }
 
     /**
+     * Get the middleware route.
+     * 
+     * @return null|\MinasRouter\Router\Middlewares\MiddlewareCollection
+     */
+    public function getMiddleware()
+    {
+        return $this->middleware;
+    }
+
+    /**
      * Method responsible for defining the middlewares of the route.
      * 
      * @param string|array $middleware
@@ -313,7 +328,7 @@ class RouteManager
      */
     public function middleware($middleware): RouteManager
     {
-        $this->middleware = $middleware;
+        $this->middleware = new MiddlewareCollection($middleware);
 
         return $this;
     }

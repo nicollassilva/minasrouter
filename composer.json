@@ -26,7 +26,8 @@
     },
     "autoload": {
         "psr-4": {
-            "MinasRouter\\": "src/"
+            "MinasRouter\\": "src/",
+            "App\\": "app/"
         }
     },
     "scripts": {

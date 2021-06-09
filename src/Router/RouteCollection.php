@@ -8,6 +8,8 @@ use MinasRouter\Traits\RouteManagement;
 use MinasRouter\Exceptions\NotFoundException;
 use MinasRouter\Exceptions\BadMethodCallException;
 use MinasRouter\Exceptions\MethodNotAllowedException;
+use MinasRouter\Router\Middlewares\MiddlewareCollection;
+use MinasRouter\Exceptions\BadMiddlewareExecuteException;
 
 class RouteCollection
 {
@@ -155,7 +157,7 @@ class RouteCollection
         $soughtRoute = null;
 
         foreach ($routes as $verb) {
-            if (!$this->instanceOfManager($verb)) {
+            if (!$this->instanceOf($verb, RouteManager::class)) {
                 foreach ($verb as $route) {
                     if ($route->getName() === $routeName) {
                         $soughtRoute = $route;
@@ -175,15 +177,15 @@ class RouteCollection
 
     /**
      * Method responsible for verifying if the
-     * object is an instance of RouteManager.
+     * object is an instance of class.
      * 
      * @param mixed $object
      * 
      * @return bool
      */
-    public function instanceOfManager($object)
+    public function instanceOf($object, $class)
     {
-        return is_a($object, RouteManager::class);
+        return is_a($object, $class);
     }
 
     /**
@@ -199,7 +201,7 @@ class RouteCollection
 
         [$routeObject, $route] = $routes;
 
-        if ($this->instanceOfManager($routeObject)) {
+        if ($this->instanceOf($routeObject, RouteManager::class)) {
             $redirectRoute .= rtrim($routeObject->getRoute(), '(\/)?');
         } else {
             $redirectRoute .= $this->resolveRouterUri($route["redirect"]);
@@ -258,9 +260,23 @@ class RouteCollection
             );
         }
 
+        if($this->instanceOf($route->getMiddleware(), MiddlewareCollection::class)) {
+            $route->getMiddleware()->setRequest($route->request());
+
+            if(!$route->getMiddleware()->execute()) {
+                $this->setHttpCode($this->httpCodes["notFound"]);
+                
+                $this->throwException(
+                    "notFound",
+                    BadMiddlewareExecuteException::class,
+                    "Some middleware has not approved your request."
+                );
+            }
+        }
+
         [$controller, $method] = $route->getCompleteAction();
 
-        if ($method instanceof \Closure) {
+        if ($this->instanceOf($method, \Closure::class)) {
             $this->setHttpCode();
 
             return call_user_func($route->getAction(), ...$route->closureReturn());

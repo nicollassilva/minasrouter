@@ -3,6 +3,7 @@
 namespace MinasRouter\Router;
 
 use MinasRouter\Router\RouteCollection;
+use MinasRouter\Router\Middlewares\MiddlewareCollection;
 
 class RouteGroups
 {
@@ -69,7 +70,7 @@ class RouteGroups
      */
     public function middlewares($middlewares): RouteGroups
     {
-        $this->middlewares = $middlewares;
+        $this->middlewares = new MiddlewareCollection($middlewares);
 
         return $this;
     }

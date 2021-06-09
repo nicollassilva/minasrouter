@@ -4,6 +4,7 @@ namespace MinasRouter\Router;
 
 use MinasRouter\Router\RouteGroups;
 use MinasRouter\Router\RouteCollection;
+use MinasRouter\Router\Middlewares\MiddlewareRoute;
 
 abstract class Route extends RouteCollection
 {
@@ -138,6 +139,12 @@ abstract class Route extends RouteCollection
         return self::$collection->addMultipleHttpRoutes($uri, $callback, $methods);
     }
 
+    /**
+     * @param string $method
+     * @param array $arguments
+     * 
+     * @return void
+     */
     public static function __callStatic($method, $arguments)
     {
         return self::$collection->{$method}(...$arguments);
@@ -153,6 +160,12 @@ abstract class Route extends RouteCollection
         self::$collection->run();
     }
 
+    /**
+     * Method responsible for creating a 
+     * new instance of RouteGroups.
+     * 
+     * @return \MinasRouter\Router\RouteGroups
+     */
     private static function newRouteGroup()
     {
         $group = (new RouteGroups(self::$collection));
@@ -162,21 +175,66 @@ abstract class Route extends RouteCollection
         return $group;
     }
 
+    /**
+     * Method responsible for setting all global
+     * middlewares and identifying them with alias.
+     * 
+     * @param Array $middlewares
+     * 
+     * @return void
+     */
+    public static function globalMiddlewares(Array $middlewares)
+    {
+        MiddlewareRoute::setMiddlewares($middlewares);
+    }
+
+    /**
+     * Method responsible for setting the default
+     * namespace in a route group.
+     * 
+     * @param string $namespace
+     * 
+     * @return \MinasRouter\Router\RouteGroups
+     */
     public static function namespace(String $namespace)
     {
         return self::newRouteGroup()->namespace($namespace);
     }
 
+    /**
+     * Method responsible for setting the default
+     * prefix in a route group.
+     * 
+     * @param string $prefix
+     * 
+     * @return \MinasRouter\Router\RouteGroups
+     */
     public static function prefix(String $prefix)
     {
         return self::newRouteGroup()->prefix($prefix);
     }
 
-    public static function middleware(String $middleware)
+    /**
+     * Method responsible for setting the default
+     * middleware in a route group.
+     * 
+     * @param string $middleware
+     * 
+     * @return \MinasRouter\Router\RouteGroups
+     */
+    public static function middleware($middleware)
     {
         return self::newRouteGroup()->middlewares($middleware);
     }
 
+    /**
+     * Method responsible for setting the default
+     * name in a route group.
+     * 
+     * @param string $name
+     * 
+     * @return \MinasRouter\Router\RouteGroups
+     */
     public static function name(String $name)
     {
         return self::newRouteGroup()->name($name);
