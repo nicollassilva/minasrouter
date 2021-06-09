@@ -1,5 +1,15 @@
 # Router @MinasRouter
-##### MinasRouter is simple, fast and extremely readable for routes. Create and manage your routes in just a few steps.
+
+![a](https://user-images.githubusercontent.com/10711363/121407187-6b904a00-c935-11eb-84a0-5fae3d7a9deb.PNG)
+
+[![Maintainer](http://img.shields.io/badge/maintainer-@nicollassilva-blue.svg?style=flat-square)](https://github.com/nicollassilva)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/nicollassilva/minasrouter/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/nicollassilva/minasrouter/?branch=master)
+[![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
+[![Latest Version](https://img.shields.io/github/release/nicollassilva/minasrouter.svg?style=flat-square)](https://github.com/nicollassilva/minasrouter/releases)
+[![Build Status](https://scrutinizer-ci.com/g/nicollassilva/minasrouter/badges/build.png?b=master)](https://scrutinizer-ci.com/g/nicollassilva/minasrouter/build-status/master)
+[![Code Intelligence Status](https://scrutinizer-ci.com/g/nicollassilva/minasrouter/badges/code-intelligence.svg?b=master)](https://scrutinizer-ci.com/code-intelligence)
+
+#### MinasRouter is simple, fast and extremely readable for routes. Create and manage your routes in just a few steps.
 
 > Simples, rápido e MUITO funcional. **MinasRouter** é um componente de rotas PHP para projetos MVC! Foi feito para abstrair os verbos RESTfull `(GET, POST, PUT, PATCH, DELETE)` e renderizar de forma simples e fácil no controller da aplicação.
 
@@ -12,11 +22,15 @@ Simple, fast and VERY functional. **MinasRouter** is a PHP routes component for 
 # Highlights @MinasRouter
 
 - In a few minutes you can create routes for your application or api `(Yes, it really is a few minutes)`
+- Fast and Easy middleware system
 - Respect the RESTfull verbs and has great functions to deal with them
 - Route customization, regex in dynamic parameters and optional parameters
 - Spoofing for verbalization and data control (FormSpoofing)
-- Carries dynamic parameters to controller arguments
+- Carries dynamic parameters to controller arguments 
+- Easy routing groups and fast create
 - It has a **Request Class** to control and work with route data
+
+> With **two lines** you start using routes!
 
 # Tests
 
