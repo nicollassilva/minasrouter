@@ -4,6 +4,7 @@
     "keywords": [
         "Easy Route",
         "Easy PHP Route",
+        "PHP Routing",
         "PHP Route",
         "Router",
         "Route",
@@ -16,7 +17,7 @@
     "license": "MIT",
     "authors": [
         {
-            "name": "Nicollas",
+            "name": "Nicollas Silva",
             "email": "lyod.hp@gmail.com",
             "role": "Developer"
         }
@@ -26,11 +27,13 @@
     },
     "autoload": {
         "psr-4": {
-            "MinasRouter\\": "src/",
-            "App\\": "app/"
+            "MinasRouter\\": "src/"
         }
     },
     "scripts": {
-        "tests": "vendor\\bin\\phpunit --testdox tests"
+        "router-tests": "vendor\\bin\\phpunit --testdox tests"
+    },
+    "config": {
+        "optimize-autoloader": true
     }
 }

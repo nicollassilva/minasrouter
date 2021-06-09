@@ -6,12 +6,24 @@ use MinasRouter\Router\RouteManager;
 
 trait RouteManagement
 {
-    public function addRouter(String $uri, $callback)
+    /**
+     * Method responsible for
+     * instantiating a new route.
+     * 
+     * @param string $uri
+     * @param \Closure|array|string $callback
+     * 
+     * @return \MinasRouter\Router\RouteManager
+     */
+    protected function addRouter(String $uri, $callback)
     {
         return $this->newRouter($uri, $callback);
     }
 
-    public function addRedirectRouter(String $redirect, Int $http)
+    /**
+     * 
+     */
+    protected function redirectRouterData(String $redirect, Int $http)
     {
         return [
             "redirect" => $redirect,
@@ -20,13 +32,17 @@ trait RouteManagement
         ];
     }
 
-    public function newRouter($uri, $callback)
+    /**
+     * Method responsible for starting a new
+     * RouteManager instance.
+     * 
+     * @param string $uri
+     * @param \Closure|array|string $callback
+     * 
+     * @return \MinasRouter\Router\RouteManager
+     */
+    protected function newRouter(String $uri, $callback)
     {
-        // if($this->currentGroup instanceof \MinasRouter\Router\RouteGroups) {
-        //     $route->name($this->currentGroup->name);
-        //     $route->namespace($this->currentGroup->namespace);
-        // }
-
         return new RouteManager($this->baseUrl, $uri, $callback, $this->actionSeparator, $this->currentGroup);
     }
 }

@@ -39,6 +39,12 @@ class Request
         }
     }
 
+    /**
+     * Method responsible for bringing
+     * all request headers.
+     * 
+     * @return array
+     */
     protected function resolveHeaders()
     {
         $headers = [];
@@ -100,6 +106,10 @@ class Request
             return $this->queryStrings[$data];
         }
 
+        if(isset($this->params[$data])) {
+            return $this->params[$data];
+        }
+
         return null;
     }
 
@@ -131,6 +141,14 @@ class Request
                 $this->data[$param] = rawurldecode($diff[$index]);
             }
         }
+
+        if(empty($this->data)) {
+            $this->data = [];
+        }
+
+        if(empty($this->params)) {
+            $this->params = [];
+        }
     }
 
     /**
@@ -141,16 +159,17 @@ class Request
      */
     protected function setData()
     {
+        $enableFormSpoofing = ["PUT", "PATCH", "DELETE"];
+
         $post = filter_input_array(INPUT_POST, FILTER_DEFAULT);
 
-        if (!empty($post['_method']) && in_array($post['_method'], ["PUT", "PATCH", "DELETE"])) {
+        if (!empty($post['_method']) && in_array($post['_method'], $enableFormSpoofing)) {
             $this->httpMethod = $post['_method'];
             $this->data = $post;
 
             unset($this->data["_method"]);
             return;
         }
-
         if ($this->httpMethod == "POST") {
             $this->data = filter_input_array(INPUT_POST, FILTER_DEFAULT);
 
@@ -158,7 +177,7 @@ class Request
             return;
         }
 
-        if (in_array($this->httpMethod, ["PUT", "PATCH", "DELETE"]) && !empty($_SERVER['CONTENT_LENGTH'])) {
+        if (in_array($this->httpMethod, $enableFormSpoofing) && !empty($_SERVER['CONTENT_LENGTH'])) {
             parse_str(file_get_contents('php://input', false, null, 0, $_SERVER['CONTENT_LENGTH']), $putPatch);
             $this->data = $putPatch;
 

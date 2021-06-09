@@ -71,7 +71,8 @@ class RouteManager
     }
 
     /**
-     * Method responsible for returning the current group.
+     * Method responsible for returning
+     * the current group.
      * 
      * @return null|\MinasRouter\Router\RouteGroups
      */
@@ -179,7 +180,7 @@ class RouteManager
     {
         $getParams = $this->request()->getParams();
         $dinamycParameters = array_fill_keys($this->foundParameters(true, true), null);
-
+        
         $params = array_values(
             array_merge($dinamycParameters, $getParams)
         );
@@ -328,6 +329,10 @@ class RouteManager
      */
     public function middleware($middleware): RouteManager
     {
+        if(is_a($this->middleware, MiddlewareCollection::class)) {
+            $middleware = $this->middleware->storeMiddleware($middleware);
+        }
+
         $this->middleware = new MiddlewareCollection($middleware);
 
         return $this;

@@ -25,6 +25,8 @@ class RouteCollection
 
     protected $currentRoute;
 
+    protected $requestMethod;
+
     protected $httpCodes = [
         "badRequest" => 400,
         "notAllowed" => 403,
@@ -105,11 +107,20 @@ class RouteCollection
         }, $methods);
     }
 
-    public function addRedirectRoute(String $uri, String $redirect, Int $httpCode)
+    /**
+     * Method responsible for adding a redirect route.
+     * 
+     * @param string $uri
+     * @param string $redirect
+     * @param int $httpCode
+     * 
+     * @return void
+     */
+    public function addRedirectRoute(String $uri, String $redirect, Int $httpCode): void
     {
         $uri = $this->resolveRouterUri($uri);
 
-        $this->routes["REDIRECT"][$uri] = $this->addRedirectRouter($redirect, $httpCode);
+        $this->routes["REDIRECT"][$uri] = $this->redirectRouterData($redirect, $httpCode);
     }
 
     /**
@@ -183,7 +194,7 @@ class RouteCollection
      * 
      * @return bool
      */
-    public function instanceOf($object, $class)
+    protected function instanceOf($object, $class)
     {
         return is_a($object, $class);
     }
@@ -195,7 +206,7 @@ class RouteCollection
      * @param object|array $route
      * @param bool $permanent = false
      */
-    protected function redirectRoute(Array $routes, $permanent = false)
+    protected function redirectRoute(array $routes, $permanent = false)
     {
         $redirectRoute = $this->baseUrl;
 
@@ -209,6 +220,24 @@ class RouteCollection
 
         header("Location: {$redirectRoute}", true, $permanent ? 301 : $route["httpCode"]);
         exit();
+    }
+
+    /**
+     * Method responsible for formSpoofing the
+     * HTTP verbs coming from the form.
+     * 
+     * @return null|void
+     */
+    protected function resolveRequestMethod()
+    {
+        $method = $_SERVER["REQUEST_METHOD"];
+
+        if ($method != "GET" && isset($_POST["_method"])) {
+            $this->requestMethod = $_POST["_method"];
+            return null;
+        }
+
+        $this->requestMethod = $method;
     }
 
     /**
@@ -231,7 +260,9 @@ class RouteCollection
             );
         }
 
-        foreach ($this->routes[$_SERVER["REQUEST_METHOD"]] as $route) {
+        $this->resolveRequestMethod();
+
+        foreach ($this->routes[$this->requestMethod] as $route) {
             if (preg_match("~^" . $route->getRoute() . "$~", $this->currentUri)) {
                 $this->currentRoute = $route;
             }
@@ -246,7 +277,7 @@ class RouteCollection
      * 
      * @return null|\Closure
      */
-    public function dispatchRoute(): ?\Closure
+    protected function dispatchRoute(): ?\Closure
     {
         if (!$route = $this->currentRoute) {
             $this->setHttpCode($this->httpCodes["notFound"]);
@@ -256,23 +287,11 @@ class RouteCollection
                 NotFoundException::class,
                 "Route [%s] with method [%s] not found.",
                 $_SERVER["REQUEST_URI"],
-                $_SERVER["REQUEST_METHOD"]
+                $this->requestMethod
             );
         }
 
-        if($this->instanceOf($route->getMiddleware(), MiddlewareCollection::class)) {
-            $route->getMiddleware()->setRequest($route->request());
-
-            if(!$route->getMiddleware()->execute()) {
-                $this->setHttpCode($this->httpCodes["notFound"]);
-                
-                $this->throwException(
-                    "notFound",
-                    BadMiddlewareExecuteException::class,
-                    "Some middleware has not approved your request."
-                );
-            }
-        }
+        $this->executeMiddlewares($route);
 
         [$controller, $method] = $route->getCompleteAction();
 
@@ -314,6 +333,30 @@ class RouteCollection
     }
 
     /**
+     * Method responsible for executing
+     * the middlewares of the current route.
+     * 
+     * @return void
+     */
+    protected function executeMiddlewares(RouteManager $route)
+    {
+        if ($this->instanceOf($route->getMiddleware(), MiddlewareCollection::class)) {
+
+            $route->getMiddleware()->setRequest($route->request());
+
+            if (!$route->getMiddleware()->execute()) {
+                $this->setHttpCode($this->httpCodes["notFound"]);
+
+                $this->throwException(
+                    "notFound",
+                    BadMiddlewareExecuteException::class,
+                    "Some middleware has not approved your request."
+                );
+            }
+        }
+    }
+
+    /**
      * Method responsible for returning an
      * http method by slug.
      * 
@@ -349,7 +392,7 @@ class RouteCollection
      * 
      * @return null|array
      */
-    public function getRouteOf(String $method)
+    public function getRoutesOf(String $method)
     {
         $method = strtoupper($method);
 

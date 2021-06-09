@@ -12,7 +12,7 @@ trait RouterHelpers
      * 
      * @return string
      */
-    public function fixRouterUri(String $uri): String
+    protected function fixRouterUri(String $uri): String
     {
         if (!preg_match("/^\//", $uri, $match)) {
             $uri = "/{$uri}";
@@ -25,7 +25,14 @@ trait RouterHelpers
         return $uri;
     }
 
-    public function resolveRouterUri(String $uri): String
+    /**
+     * Returns the URI based on group prefix.
+     * 
+     * @param string $uri
+     * 
+     * @return string
+     */
+    protected function resolveRouterUri(String $uri): String
     {
         $uri = $this->fixRouterUri($uri);
 

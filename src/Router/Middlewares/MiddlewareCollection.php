@@ -24,6 +24,15 @@ class MiddlewareCollection
         $this->middlewares = $middlewares;
     }
 
+    public function get(String $middleware = null)
+    {
+        if ($middleware && is_array($this->middlewares) && isset($this->middlewares[$middleware])) {
+            return $this->middlewares[$middleware];
+        }
+
+        return $this->middlewares;
+    }
+
     /**
      * Method responsible for setting the Route's Request
      * 
@@ -44,9 +53,35 @@ class MiddlewareCollection
      * 
      * @return void
      */
-    public function setMiddlewares(Array $middlewares)
+    public function setMiddlewares(array $middlewares)
     {
         $this->middlewares = $middlewares;
+    }
+
+    public function storeMiddleware($middleware)
+    {
+        if (is_string($middleware)) {
+            $middleware = explode(",", $middleware);
+        }
+
+        return $this->resolveLaterMiddleware($middleware);
+    }
+
+    private function resolveLaterMiddleware(array $middleware)
+    {
+        $currentMiddleware = $this->middlewares;
+
+        foreach ($middleware as $mid) {
+            $mid = trim(rtrim($mid));
+            
+            if (is_string($currentMiddleware)) {
+                $currentMiddleware .= ", {$mid}";
+            } else {
+                $currentMiddleware[] = $mid;
+            }
+        }
+
+        return $currentMiddleware;
     }
 
     /**
@@ -85,9 +120,9 @@ class MiddlewareCollection
      * 
      * @return void
      */
-    protected function resolveNestedMiddleware(Array $middlewares): void
+    protected function resolveNestedMiddleware(array $middlewares): void
     {
-        $this->queue = array_map(function($middleware) {
+        $this->queue = array_map(function ($middleware) {
             $middleware = trim(rtrim($middleware));
 
             return $this->instanceMiddleware($middleware);
@@ -104,7 +139,7 @@ class MiddlewareCollection
     protected function instanceMiddleware($middleware)
     {
         if (!preg_match("/\\\/", $middleware)) {
-            if(!$middlewareClass = $this->getByAlias($middleware)) return;
+            if (!$middlewareClass = $this->getByAlias($middleware)) return;
 
             return new $middlewareClass();
         }
@@ -126,8 +161,8 @@ class MiddlewareCollection
      */
     protected function getByAlias(String $alias)
     {
-        $middlewares = MiddlewareRoute::getSetMiddlewares();
-        
+        $middlewares = MiddlewareRoute::getGlobalMiddlewares();
+
         if (!array_key_exists($alias, $middlewares)) {
             return;
         }
@@ -183,8 +218,8 @@ class MiddlewareCollection
         }
 
         return $currentMiddleware->handle(
-                $this->currentRequest,
-                fn() => $this->next()
-            );
+            $this->currentRequest,
+            fn () => $this->next()
+        );
     }
 }

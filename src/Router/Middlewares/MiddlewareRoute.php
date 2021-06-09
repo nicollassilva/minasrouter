@@ -20,11 +20,11 @@ abstract class MiddlewareRoute
     }
 
     /**
-     * Return the set Middlewares.
+     * Return the Global's Middlewares.
      * 
      * @return array
      */
-    public static function getSetMiddlewares()
+    public static function getGlobalMiddlewares()
     {
         return self::$setMiddlewares;
     }

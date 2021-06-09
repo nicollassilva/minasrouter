@@ -11,7 +11,7 @@ final class RouteTest extends TestCase
     /**
      * @test
      */
-    public function check_if_the_initiator_created_a_collection_instance()
+    public function check_if_the_initiator_created_a_RouteCollection_instance()
     {
         Route::start("http://localhost/");
 
@@ -25,13 +25,13 @@ final class RouteTest extends TestCase
     /**
      * @test
      */
-    public function check_if_the_routes_restful_methods_returns_an_instance_of_manager()
+    public function check_if_the_routes_restful_methods_returns_an_instance_of_RouteManager()
     {
         $routes = [
-            "get" => Route::get("/users", [User::class, 'index']),
+            "get" => Route::get("/users", [User::class, "index"]),
             "post" => Route::post("/user", "User@store"),
-            "put" => Route::put("/user/{id}/update", [User::class, 'update']),
-            "patch" => Route::patch("/user/{id}/update", [User::class, 'update']),
+            "put" => Route::put("/user/{id}/update", [User::class, "update"]),
+            "patch" => Route::patch("/user/{id}/update", [User::class, "update"]),
             "delete" => Route::delete("/user/{id}", "User@delete"),
         ];
 
@@ -50,24 +50,24 @@ final class RouteTest extends TestCase
     public function check_if_name_function_change_route_name()
     {
         $route = Route::get(
-            '/dashboard',
-            [Dashboard::class, 'index']
-        )->name('dashboard.index');
+            "/dashboard",
+            [Dashboard::class, "index"]
+        )->name("dashboard.index");
 
         $this->assertTrue(
-            $route->getName() === 'dashboard.index',
+            $route->getName() === "dashboard.index",
             "Error in [name] method. One step"
         );
 
         $routeTwo = Route::post(
-            '/dashboard/admins',
+            "/dashboard/admins",
             function () {
-                echo 'Admins list: ...';
+                echo "Admins list: ...";
             }
-        )->name('dashboard.admins');
+        )->name("dashboard.admins");
 
         $this->assertTrue(
-            $routeTwo->getName() === 'dashboard.admins',
+            $routeTwo->getName() === "dashboard.admins",
             "Error in [name] method. Two step"
         );
     }
@@ -77,28 +77,28 @@ final class RouteTest extends TestCase
      */
     public function check_if_the_function_where_the_route_regex_change()
     {
-        $routeNumber = Route::get('/profile/{id}', [User::class, 'profile'])
-            ->where(['id' => '[0-9]+']);
+        $routeNumber = Route::get("/profile/{id}", [User::class, "profile"])
+            ->where(["id" => "[0-9]+"]);
 
         $this->assertTrue(
-            $routeNumber->getRoute() === '/profile/([0-9]+)(\/)?',
+            $routeNumber->getRoute() === "/profile/([0-9]+)(\/)?",
             "Error in [where] method"
         );
 
-        $routeCharacters = Route::put('/profile/{slug}/avatar', [User::class, 'changeAvatar'])
-            ->whereParam('slug', '[a-z0-9A-Z\-\_]+');
+        $routeCharacters = Route::put("/profile/{slug}/avatar", [User::class, "changeAvatar"])
+            ->whereParam("slug", "[a-z0-9A-Z\-\_]+");
 
         $this->assertTrue(
-            $routeCharacters->getRoute() === '/profile/([a-z0-9A-Z\-\_]+)/avatar(\/)?',
+            $routeCharacters->getRoute() === "/profile/([a-z0-9A-Z\-\_]+)/avatar(\/)?",
             "Error in [whereParam] method"
         );
 
-        $routeReplacing = Route::delete('/book/{id}/delete', [Book::class, 'destroy'])
-            ->where(['id' => '[0-9]+'])
-            ->whereParam('id', '[0-9a-z]+');
+        $routeReplacing = Route::delete("/book/{id}/delete", [Book::class, "destroy"])
+            ->where(["id" => "[0-9]+"])
+            ->whereParam("id", "[0-9a-z]+");
 
         $this->assertTrue(
-            $routeReplacing->getRoute() === '/book/([0-9a-z]+)/delete(\/)?',
+            $routeReplacing->getRoute() === "/book/([0-9a-z]+)/delete(\/)?",
             "Error in replacing [where] method to [whereParam] method."
         );
 
@@ -109,31 +109,31 @@ final class RouteTest extends TestCase
          */
 
         $routeNumberMethod = Route::delete(
-            '/profile/{id}/delete',
-            [User::class, 'destroy']
+            "/profile/{id}/delete",
+            [User::class, "destroy"]
         )
-            ->whereNumber('id')
-            ->name('method.number');
+            ->whereNumber("id")
+            ->name("method.number");
 
         $this->assertTrue(
-            $routeNumberMethod->getRoute() === '/profile/([0-9]+)/delete(\/)?',
+            $routeNumberMethod->getRoute() === "/profile/([0-9]+)/delete(\/)?",
             "Error in [whereNumber] method"
         );
 
-        $alphaRegex = '[a-zA-ZÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÒÓÔÕÖßÙÚÛÜÝŸÑàáâãäåçèéêëìíîïðòóôõöùúûüýÿñ]+';
+        $alphaRegex = "[a-zA-ZÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÒÓÔÕÖßÙÚÛÜÝŸÑàáâãäåçèéêëìíîïðòóôõöùúûüýÿñ]+";
 
-        $routeAlphaMethod = Route::get('/profile/{slug}', [User::class, 'profile'])
-            ->whereAlpha('slug')
-            ->name('method.alpha');
+        $routeAlphaMethod = Route::get("/profile/{slug}", [User::class, "profile"])
+            ->whereAlpha("slug")
+            ->name("method.alpha");
 
         $this->assertTrue(
             $routeAlphaMethod->getRoute() === "/profile/({$alphaRegex})(\/)?",
             "Error in [whereAlpha] method"
         );
 
-        $routeAlphaNumericMethod = Route::patch('/books/{slug}', [Books::class, 'show'])
-            ->whereAlphaNumeric('slug')
-            ->name('method.alphaNumeric');
+        $routeAlphaNumericMethod = Route::patch("/books/{slug}", [Books::class, "show"])
+            ->whereAlphaNumeric("slug")
+            ->name("method.alphaNumeric");
 
         $alphaRegex = rtrim($alphaRegex, "]+") . "0-9]+";
 
@@ -142,9 +142,9 @@ final class RouteTest extends TestCase
             "Error in [whereAlphaNumeric] method"
         );
 
-        $routeUuidMethod = Route::put('/notebook/{slug}', [Notebook::class, 'show'])
-            ->whereUuid('slug')
-            ->name('method.uuid');
+        $routeUuidMethod = Route::put("/notebook/{slug}", [Notebook::class, "show"])
+            ->whereUuid("slug")
+            ->name("method.uuid");
 
         $this->assertTrue(
             $routeUuidMethod->getRoute() === "/notebook/((?i)[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12})(\/)?",
@@ -207,7 +207,7 @@ final class RouteTest extends TestCase
         foreach ($httpMethods as $index => $httpMethod) {
             $this->assertCount(
                 $resultBeforeAnyMethod[$index] + 1,
-                Route::$collection->getRouteOf($httpMethod),
+                Route::$collection->getRoutesOf($httpMethod),
                 "The method [{$httpMethod}] has less route than expected. ANY Method"
             );
         }
@@ -222,7 +222,7 @@ final class RouteTest extends TestCase
             if ($httpMethods == "GET" || $httpMethod == "POST") {
                 $this->assertCount(
                     $resultBeforeAnyMethod[$index] + 2,
-                    Route::$collection->getRouteOf($httpMethod),
+                    Route::$collection->getRoutesOf($httpMethod),
                     "The method [{$httpMethod}] has less route than expected. MATCH Method"
                 );
             }
@@ -232,12 +232,12 @@ final class RouteTest extends TestCase
     /**
      * @test
      */
-    public function check_if_all_routes_have_an_instance_of_request()
+    public function check_if_all_routes_have_an_instance_of_Request()
     {
         $httpMethods = ["GET", "POST", "PUT", "PATCH", "DELETE"];
 
         foreach ($httpMethods as $method) {
-            $routes = Route::$collection->getRouteOf($method);
+            $routes = Route::$collection->getRoutesOf($method);
 
             foreach ($routes as $route) {
                 $this->assertInstanceOf(
