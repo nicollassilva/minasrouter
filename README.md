@@ -43,7 +43,7 @@ MinasRouter is available via `Composer require`:
 
 ```json
 "require" {
-    "nicollassilva/minasrouter": "1.0.*"
+    "nicollassilva/minasrouter": "^1.0"
 }
 ```
 or run in **terminal**:
@@ -64,17 +64,29 @@ composer require nicollassilva/minasrouter
 - [Named Routes](https://github.com/nicollassilva/minasrouter#named-routes)
 - [Dynamic Parameters (Required and Optional)](https://github.com/nicollassilva/minasrouter#dynamic-parameters-required-and-optional)
 - [Validating a Dynamic Parameter](https://github.com/nicollassilva/minasrouter#validating-a-dynamic-parameter)
+* **Middlewares**
+- [Set Global Middlewares](https://github.com/nicollassilva/minasrouter#global-middlewares)
 * **Route Groups**
 - [All Methods](https://github.com/nicollassilva/minasrouter#route-groups)
 - [Named Group](https://github.com/nicollassilva/minasrouter#named-group)
 - [Prefixed Group](https://github.com/nicollassilva/minasrouter#prefixed-group)
 - [Default Namespace Group](https://github.com/nicollassilva/minasrouter#default-namespace-group)
+- [Default Middleware Group](https://github.com/nicollassilva/minasrouter#default-middleware-group)
 - [Nested Group Methods](https://github.com/nicollassilva/minasrouter#nested-group-methods)
-* **Others Methods**
+* **Others**
 - [Route Redirect](https://github.com/nicollassilva/minasrouter#route-redirect)
+- [Route with Individual Middleware in Group](https://github.com/nicollassilva/minasrouter#route-with-individual-middleware-in-group)
+- [Route with Different Name in Group](https://github.com/nicollassilva/minasrouter#route-with-different-name-in-group)
 
 ### 3. Request Route
 - [Introduction](https://github.com/nicollassilva/minasrouter#request-route)
+* **Methods**
+- [Request Path](https://github.com/nicollassilva/minasrouter#retrieving-the-request-path)
+- [Request URL](https://github.com/nicollassilva/minasrouter#retrieving-the-request-url)
+- [Request Headers](https://github.com/nicollassilva/minasrouter#request-headers)
+- [Request IP Address](https://github.com/nicollassilva/minasrouter#request-ip-address)
+- [Retrieving Data](https://github.com/nicollassilva/minasrouter#retrieving-data)
+- [Request Method](https://github.com/nicollassilva/minasrouter#retrieving-the-request-method)
 
 # Introduction
 
@@ -212,8 +224,8 @@ Route::get("/user/{id}", function($id) {
 })->name("user.show");
 
 Route::get("/post/{id?}", function($id) {
-    if($id) {
-        echo "ID not found";
+    if(!$id) {
+        // ...
     }
     
     // ...
@@ -248,6 +260,63 @@ Route::get("/profile/{slug}", [\App\Controllers\UserController::class, "profile"
 Route::get("/book/{id}", [\App\Controllers\BookController::class, "show"])
     ->name("book.show")
     ->whereNumber("id");
+```
+
+# Middlewares
+
+Working with middlewares around here is pretty easy, we just need to pass the full names of the classes or set them as global, and from there, we use their alias.
+
+### Set Global Middlewares
+
+**OBS: It is important that you place all routes below. Routes above this class will not have these middlewares as global.**
+
+```php
+Route::globalMiddlewares([
+    'isLogged' => \App\Middlewares\isLogged::class,
+    'isAdmin' => \App\Middlewares\isAdmin::class
+]);
+
+// ... all routes
+```
+
+### Attach in a route
+
+You may use the middleware method to assign middleware to a route.
+
+```php
+Route::get("/musics", function() {
+    // ...
+})->middleware("isLogged");
+
+Route::get("/musics", function() {
+    // ...
+})->middleware(["isLogged"]);
+```
+
+You may assign multiple middleware to the route by passing an array of middleware names to the middleware method.
+
+```php
+Route::get("/musics", function() {
+    // ...
+})->middleware("first, second");
+
+Route::get("/movies", function() {
+    // ...
+})->middleware(["first", "second"]);
+```
+
+When assigning middleware, you may also pass the fully qualified class name:
+
+```php
+use App\Middlewares\VerifyCsrfToken;
+
+Route::get("/series", function() {
+    // ...
+})->middleware(VerifyCsrfToken::class);
+
+Route::get("/series", function() {
+    // ...
+})->middleware(App\Middlewares\VerifyCsrfToken::class);
 ```
 
 # Route Groups
@@ -294,10 +363,19 @@ Route::namespace("App\Controllers")->group(function() {
 });
 ```
 
+### Default Middleware group
+
+```php
+Route::middleware(\App\Middlewares\isLogged::class)->group(function() {
+    Route::get("/user/{id}", ["User", "show"])->name("show");
+});
+```
+
 ### Nested group methods
 
 ```php
 Route::namespace("App\Controllers\Admin")
+    ->middleware(["isLogged", "isAdmin"])
     ->name("admin.")
     ->prefix("admin")
     ->group(function() {
@@ -306,6 +384,32 @@ Route::namespace("App\Controllers\Admin")
 ```
 
 # Others
+
+### Route with Individual Middleware in group
+
+You can use routes with individual middlewares within a route group.
+
+```php
+Route::namespace("isLogged")->group(function() {
+    Route::get("/posts", function() {
+        // ...
+    })->middleware("isAdmin");
+    
+    // ...
+});
+```
+
+### Route with Different name in group
+
+Maybe you are wanting a route where you ignore the group name, you can use the second parameter of the name method for that.
+
+```php
+Route::name("admin.")->group(function() {
+    Route::get("/posts", function() {
+        // name: app.posts
+    })->name("app.posts", true);
+});
+```
 
 ### Route redirect
 
@@ -335,3 +439,152 @@ Route::redirect("/index", "web.index");
 Be careful you redirect to an existing route, because if it has dynamic arguments, it will return the entire regex and error returned.
 
 # Request Route
+
+Each time the route is called and the Closure or controller method is called, you will have as a parameter an instance of \MinasRouter\Http\Request. If the route has dynamic parameters (mandatory or optional), they need to be passed before receiving the Request instance.
+
+|  Function |        Parameter       |     Parameter    |
+|:---------:|:----------------------:|:----------------:|
+| getParams |                        |                  |
+|    path   |                        |                  |
+|    url    |                        |                  |
+|  fullUrl  |                        |                  |
+|   header  |     String $header     |  String $default |
+| hasHeader |     String $header     |                  |
+|     ip    |                        |                  |
+|   query   |     ?String $query     | ?String $default |
+|    all    |     ?String $except    |                  |
+| getMethod |                        |                  |
+|  isMethod | String $expectedMethod |                  |
+
+The dynamic parameters of the route are directly passed in the method together with a instance of Request.
+
+Example:
+
+```php
+use \MinasRouter\Http\Request;
+
+Route::get("/", function(Request $request)) {
+   // ... 
+});
+
+Route::get("/user/{id}", function($id, Request $request)) {
+   // ... 
+});
+
+Route::get("/posts/{slug?}", function($slug, Request $request)) {
+   // ... 
+});
+
+Route::get("/book/{slug}", function($slug, Request $request) {
+    // Retrieving all dynamic parameters
+    print_r($request->getParams());
+});
+
+```
+
+The Request method is the method that has all your form data, query parameters, dynamic route parameters, and the entire request header.
+
+# Request Methods
+
+### Retrieving The Request Path
+
+The **path** method returns the request's path information. So, if the incoming request is targeted at **http://localhost/foo/bar**, the path method will return **foo/bar**:
+
+```php
+$uri = $request->path();
+```
+
+### Retrieving The Request URL
+
+To retrieve the full URL for the incoming request you may use the **url** or **fullUrl** methods. The **url** method will return the URL without the query string, while the **fullUrl** method includes the query string:
+
+```php
+$url = $request->url();
+
+$urlWithQueryString = $request->fullUrl();
+```
+
+### Request Headers
+
+You may retrieve a request header from the **\MinasRouter\Http\Request** instance using the header method. If the header is not present on the request, null will be returned. However, the header method accepts an optional second argument that will be returned if the header is not present on the request:
+
+```php
+$value = $request->header("Header-Name");
+
+$value = $request->header("Header-Name", "default");
+```
+
+The **hasHeader** method may be used to determine if the request contains a given header:
+
+```php
+if ($request->hasHeader("Header-Name")) {
+    // ...
+}
+```
+
+The **bearerToken** method may be used to retrieve a bearer token from the Authorization header. If no such header is present, null will be returned.
+
+```php
+$token = $request->bearerToken();
+```
+
+### Request IP Address
+
+The **ip** method may be used to retrieve the IP address of the client that made the request to your website:
+
+```php
+$ipAddress = $request->ip();
+```
+
+### Retrieving Data
+
+The **query** method will only retrieve values from the query string:
+
+```php
+$id = $request->query("id");
+```
+
+If the requested query string value data is not present, the second argument to this method will be returned:
+
+```php
+$developer = $request->query("developer", "Nicollas");
+```
+
+You may call the query method without any arguments in order to retrieve all of the query string values.
+
+```php
+$query = $request->query();
+```
+
+You can access queryString's and input data directly, how properties of the Request class.
+
+```php
+// http://localhost/?foo=bar
+
+$foo = $request->foo;
+
+// <input type="text" name="title" value="MinasRouter">
+
+$title = $request->title;
+```
+
+You may retrieve all of the incoming request's input data as an array using the all method. This method may be used regardless of whether the incoming request is from an HTML form or is an XHR request. If you want to nullify some data, you can pass it as a second parameter.
+
+```php
+$data = $request->all();
+
+// all, except csrf_token, page
+$data = $request->all("csrf_token, page");
+```
+
+### Retrieving The Request Method
+
+The **getMethod** method will return the HTTP verb for the request. You may use the **isMethod** method to verify that the HTTP verb matches a given string:
+
+```php
+$httpMethod = $request->getMethod();
+
+if ($request->isMethod('POST')) {
+    // ...
+}
+```
