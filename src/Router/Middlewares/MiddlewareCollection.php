@@ -7,8 +7,8 @@ use MinasRouter\Router\Middlewares\MiddlewareRoute;
 
 class MiddlewareCollection
 {
-    /** @var array */
-    protected $middlewares = [];
+    /** @var array|string */
+    protected $middlewares;
 
     /** @var object */
     protected $currentRequest;
@@ -123,11 +123,7 @@ class MiddlewareCollection
      */
     protected function executeMiddleware()
     {
-        $middlewares = $this->middlewares;
-
-        if (is_string($middlewares)) {
-            $middlewares = explode(',', $middlewares);
-        }
+        $middlewares = explode(',', $this->middlewares);
 
         $this->resolveNestedMiddleware($middlewares);
 

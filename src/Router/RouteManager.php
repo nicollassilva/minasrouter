@@ -151,6 +151,16 @@ class RouteManager
     }
 
     /**
+     * Return the where of router.
+     * 
+     * @return void
+     */
+    protected function setWhereData(String $key, String $value)
+    {
+        $this->where[$key] = $value;
+    }
+
+    /**
      * Method responsible for returning all dynamic parameters.
      * 
      * @return array
@@ -201,6 +211,9 @@ class RouteManager
      */
     private function compileAction($callback)
     {
+        $handler = '';
+        $action = '';
+
         if ($callback instanceof \Closure) {
             $this->action = $callback;
             return null;
@@ -269,6 +282,26 @@ class RouteManager
     public function getName(): ?String
     {
         return $this->name;
+    }
+
+    /**
+     * Set the route name.
+     * 
+     * @return void
+     */
+    protected function setName(String $value)
+    {
+        $this->name = $value;
+    }
+
+    /**
+     * Get the route default name.
+     * 
+     * @return void
+     */
+    protected function getDefaultName()
+    {
+        return $this->defaultName;
     }
 
     /**

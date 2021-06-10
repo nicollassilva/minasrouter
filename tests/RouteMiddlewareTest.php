@@ -15,7 +15,7 @@ final class RouteMiddlewareTest extends TestCase
 
         $route = Route::get("/", [\App\Controllers\WebController::class, "index"])
             ->name("index.middlewares")
-            ->middleware(\App\Middlewares\isAdmin::class);
+            ->middleware([\App\Middlewares\isAdmin::class]);
 
         $this->assertInstanceOf(
             MiddlewareCollection::class,
@@ -45,13 +45,13 @@ final class RouteMiddlewareTest extends TestCase
      */
     public function check_that_a_route_with_a_middleware_method_within_a_route_group_runs_all_middlewares()
     {
-        Route::middleware(\App\Middlewares\isLogged::class)->group(function () {
+        Route::middleware([\App\Middlewares\isLogged::class])->group(function () {
             $routeWithIndividualMiddleware = Route::put("/panel", [\App\Controllers\Panel\PanelController::class, "index"])
                 ->middleware(\App\Middlewares\isModerator::class);
 
             $this->assertSame(
                 $routeWithIndividualMiddleware->getMiddleware()->get(),
-                "App\Middlewares\isLogged, App\Middlewares\isModerator",
+                ["App\Middlewares\isLogged", "App\Middlewares\isModerator"],
                 "Error in route [{$routeWithIndividualMiddleware->getName()}] middlewares."
             );
 
@@ -59,7 +59,7 @@ final class RouteMiddlewareTest extends TestCase
 
             $this->assertSame(
                 $routeWithoutIndividualMiddleware->getMiddleware()->get(),
-                "App\Middlewares\isLogged",
+                ["App\Middlewares\isLogged"],
                 "Error in route [{$routeWithoutIndividualMiddleware->getName()}] middlewares."
             );
 
@@ -68,7 +68,7 @@ final class RouteMiddlewareTest extends TestCase
 
             $this->assertSame(
                 $routeWithIndividualMiddleware->getMiddleware()->get(),
-                "App\Middlewares\isLogged, App\Middlewares\isModerator, App\Middlewares\isAdmin",
+                ["App\Middlewares\isLogged", "App\Middlewares\isModerator", "App\Middlewares\isAdmin"],
                 "Error in route [{$routeWithIndividualMiddleware->getName()}] middlewares."
             );
         });
@@ -90,7 +90,7 @@ final class RouteMiddlewareTest extends TestCase
         Route::namespace("App\Controllers\Dashboard")
             ->prefix("dashboard/")
             ->name("dashboard.")
-            ->middlewares("verifyTrustCsrf, setLocaleBySession")
+            ->middlewares(["verifyTrustCsrf", "setLocaleBySession"])
             ->group(function () {
                 $routes = [
                     Route::get("/", "DashboardController@index")->name("index"),
@@ -100,14 +100,14 @@ final class RouteMiddlewareTest extends TestCase
                     Route::get("/admins", "AppController@admins")->name("app.admins")->middleware("isAdmin, isLogged"),
                     Route::get("/forgout-email", "DashboardController@forgoutEmail")->name("forgout.email"),
                     Route::get("/server-status", "DashboardController@serverStatus")->name("server.status"),
-                    Route::get("/posts", "AppController@posts")->name("app.posts")->middleware("isLogged, isModerator"),
+                    Route::get("/posts", "AppController@posts")->name("app.posts")->middleware(["isLogged", "isModerator"]),
                     Route::get("/admin-ranking", "DashboardController@adminRanking")->name("admin.ranking")
                 ];
 
                 $routesWithIndividualMiddlewares = [
-                    "dashboard.app.index" => "verifyTrustCsrf, setLocaleBySession, isLogged",
-                    "dashboard.app.posts" => "verifyTrustCsrf, setLocaleBySession, isLogged, isModerator",
-                    "dashboard.app.admins" => "verifyTrustCsrf, setLocaleBySession, isAdmin, isLogged"
+                    "dashboard.app.index" => ["verifyTrustCsrf", "setLocaleBySession", "isLogged"],
+                    "dashboard.app.posts" => ["verifyTrustCsrf", "setLocaleBySession", "isLogged", "isModerator"],
+                    "dashboard.app.admins" => ["verifyTrustCsrf", "setLocaleBySession", "isAdmin", "isLogged"]
                 ];
 
                 foreach ($routes as $route) {
@@ -126,7 +126,7 @@ final class RouteMiddlewareTest extends TestCase
 
                     $this->assertSame(
                         $routeCompleteMiddleware,
-                        "verifyTrustCsrf, setLocaleBySession",
+                        ["verifyTrustCsrf", "setLocaleBySession"],
                         "Error in route [{$routeName}] middlewares."
                     );
                 }

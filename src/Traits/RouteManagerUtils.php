@@ -4,6 +4,10 @@ namespace MinasRouter\Traits;
 
 trait RouteManagerUtils
 {
+    public abstract function setWhereData(String $key, String $value);
+    public abstract function setName(String $name);
+    public abstract function getDefaultName();
+
     /**
      * Method responsible for defining the regular
      * expressions of dynamic parameters.
@@ -14,7 +18,7 @@ trait RouteManagerUtils
     public function where(array $matches)
     {
         array_map(function ($key, $value) {
-            $this->where[$key] = $value;
+            $this->setWhereData($key, $value);
         }, array_keys($matches), $matches);
 
         return $this;
@@ -29,7 +33,7 @@ trait RouteManagerUtils
      */
     public function whereParam(String $param, String $value)
     {
-        $this->where[$param] = $value;
+        $this->setWhereData($param, $value);
 
         return $this;
     }
@@ -93,9 +97,9 @@ trait RouteManagerUtils
     public function name(String $name, Bool $ignoreDefault = false)
     {
         if($ignoreDefault) {
-            $this->name = $name;
+            $this->setName($name);
         } else {
-            $this->name = $this->defaultName . $name;
+            $this->setName($this->getDefaultName() . $name);
         }
 
         return $this;

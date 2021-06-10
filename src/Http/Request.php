@@ -84,7 +84,7 @@ class Request
      * Method responsible for returning
      * the current route path.
      * 
-     * @return string
+     * @return string|array
      */
     public function path()
     {
