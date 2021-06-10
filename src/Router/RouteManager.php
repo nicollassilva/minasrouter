@@ -297,7 +297,7 @@ class RouteManager
     /**
      * Get the route default name.
      * 
-     * @return void
+     * @return string|null
      */
     protected function getDefaultName()
     {

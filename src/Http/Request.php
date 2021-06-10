@@ -63,15 +63,13 @@ class Request
      * Method responsible for returning the
      * current route in parts.
      * 
-     * @return array|string|null
+     * @return string|null|array
      */
     protected function getParsedRoute(?String $data = null)
     {
         $parsedRoute = parse_url($this->fullUrl ?? "/");
 
-        if (empty($data)) {
-            return $parsedRoute;
-        }
+        if (empty($data)) return $parsedRoute;
 
         if (isset($parsedRoute[$data])) {
             return $parsedRoute[$data];
@@ -84,7 +82,7 @@ class Request
      * Method responsible for returning
      * the current route path.
      * 
-     * @return string|array
+     * @return string
      */
     public function path()
     {
@@ -190,7 +188,7 @@ class Request
      */
     protected function resolveRouteData(String $route, array $routeParams): void
     {
-        $params = $this->path();
+        $params = (string) $this->path();
 
         $diff = array_diff(explode('/', $params), explode('/', $route));
 

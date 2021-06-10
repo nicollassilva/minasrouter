@@ -123,7 +123,11 @@ class MiddlewareCollection
      */
     protected function executeMiddleware()
     {
-        $middlewares = explode(',', $this->middlewares);
+        $middlewares = $this->middlewares;
+
+        if(is_string($middlewares)) {
+            $middlewares = explode(',', $middlewares);
+        }
 
         $this->resolveNestedMiddleware($middlewares);
 
