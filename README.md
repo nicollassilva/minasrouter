@@ -66,6 +66,7 @@ composer require nicollassilva/minasrouter
 - [Validating a Dynamic Parameter](https://github.com/nicollassilva/minasrouter#validating-a-dynamic-parameter)
 * **Middlewares**
 - [Set Global Middlewares](https://github.com/nicollassilva/minasrouter#global-middlewares)
+- [Attach in a route](https://github.com/nicollassilva/minasrouter#attach-in-a-route)
 * **Route Groups**
 - [All Methods](https://github.com/nicollassilva/minasrouter#route-groups)
 - [Named Group](https://github.com/nicollassilva/minasrouter#named-group)
