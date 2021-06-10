@@ -25,8 +25,8 @@ class Request
 
         $this->httpMethod = $_SERVER['REQUEST_METHOD'] ?? '';
         $this->queryStrings = $_GET;
-        
-        if(isset($this->queryStrings["route"])) {
+
+        if (isset($this->queryStrings["route"])) {
             unset($this->queryStrings["route"]);
         }
 
@@ -61,30 +61,97 @@ class Request
 
     /**
      * Method responsible for returning the
+     * current route in parts.
+     * 
+     * @return array|string
+     */
+    protected function getParsedRoute(?String $data = null)
+    {
+        $parsedRoute = parse_url($this->fullUrl ?? "/");
+
+        if (!is_array($parsedRoute)) {
+            return null;
+        }
+
+        if (empty($data)) {
+            return $parsedRoute;
+        }
+
+        return isset($parsedRoute[$data]) ? $parsedRoute[$data] : null;
+    }
+
+    /**
+     * Method responsible for returning
+     * the current route path.
+     * 
+     * @return string
+     */
+    public function path()
+    {
+        $path = $this->getParsedRoute("path");
+
+        return $path ?? "/";
+    }
+
+    /**
+     * Method responsible for returning
+     * the current route without query strings.
+     * 
+     * @return null|string
+     */
+    public function url()
+    {
+        $path = $this->getParsedRoute();
+
+        if (!$path) return null;
+
+        return "{$path['scheme']}://{$path['host']}{$this->path()}";
+    }
+
+    /**
+     * Method responsible for returning
+     * the full current route (with query strings).
+     * 
+     * @return null|string
+     */
+    public function fullUrl()
+    {
+        $query = $this->getParsedRoute("query");
+
+        return "{$this->url()}?{$query}";
+    }
+
+    /**
+     * Method responsible for returning the
      * route's dynamic parameters.
      * 
      * @return array
      */
     public function getParams()
     {
-        return $this->params ?? $this->data;
+        return $this->params;
     }
 
     /**
      * Method responsible for returning one or all
      * data coming from the params query ($_GET).
      * 
-     * @return null|string $name = null
+     * @param null|string $name = null
+     * @param null|string $asDefault = null
      * 
      * @return array|string
      */
-    public function getQueryString(?String $name = null)
+    public function query(?String $name = null, ?String $asDefault = null)
     {
-        if ($name && isset($this->queryStrings[$name])) {
+        if(!$name) {
+            return $this->queryStrings;
+        }
+
+        if (isset($this->queryStrings[$name])) {
             return $this->queryStrings[$name];
         }
 
-        return $this->queryStrings;
+        return $asDefault;
     }
 
     /**
@@ -98,15 +165,15 @@ class Request
      */
     public function __get(String $data)
     {
-        if(isset($this->data[$data])) {
+        if (isset($this->data[$data])) {
             return $this->data[$data];
         }
 
-        if(isset($this->queryStrings[$data])) {
+        if (isset($this->queryStrings[$data])) {
             return $this->queryStrings[$data];
         }
 
-        if(isset($this->params[$data])) {
+        if (isset($this->params[$data])) {
             return $this->params[$data];
         }
 
@@ -123,9 +190,9 @@ class Request
      */
     protected function resolveRouteData(String $route, array $routeParams): void
     {
-        $params = parse_url($this->fullUrl);
+        $params = $this->getParsedRoute("path");
 
-        $diff = array_diff(explode('/', $params['path']), explode('/', $route));
+        $diff = array_diff(explode('/', $params), explode('/', $route));
 
         $diff = array_values($diff);
 
@@ -142,11 +209,11 @@ class Request
             }
         }
 
-        if(empty($this->data)) {
+        if (empty($this->data)) {
             $this->data = [];
         }
 
-        if(empty($this->params)) {
+        if (empty($this->params)) {
             $this->params = [];
         }
     }
@@ -200,6 +267,19 @@ class Request
     }
 
     /**
+     * Method responsible for checking if the current http method
+     * is the expected.
+     * 
+     * @param string $expectedMethod
+     * 
+     * @return bool
+     */
+    public function isMethod(String $expectedMethod): bool
+    {
+        return $this->getMethod() === $expectedMethod;
+    }
+
+    /**
      * Method responsible for returning all request data.
      * 
      * @param null|string $except = null
@@ -242,18 +322,74 @@ class Request
     }
 
     /**
-     * Method responsible for returning one or all header data.
+     * Method responsible for returning all header data.
      * 
-     * @param string $header = null
-     * 
-     * @return array|string
+     * @return array
      */
-    public function getHeaders(?String $header = null)
+    public function getHeaders()
     {
-        if ($header && isset($this->headers[$header])) {
+        return $this->headers;
+    }
+
+    /**
+     * Method responsible for returning one header data or default value.
+     * 
+     * @param string $header
+     * @param null|string $asDefault
+     * 
+     * @return null|string
+     */
+    public function header(String $header, ?String $asDefault = null)
+    {
+        if (isset($this->headers[$header])) {
             return $this->headers[$header];
         }
 
-        return $this->headers;
+        return $asDefault;
+    }
+
+    /**
+     * Method responsible for checking if there is one
+     * header in the request.
+     * 
+     * @param string $header
+     * 
+     * @return bool
+     */
+    public function hasHeader(String $header)
+    {
+        return (bool) $this->header($header);
+    }
+
+    /**
+     * Method responsible for returning ip of client request.
+     * 
+     * @return string
+     */
+    public function ip()
+    {
+        if (array_key_exists('HTTP_X_FORWARDED_FOR', $_SERVER) && !empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            if (strpos($_SERVER['HTTP_X_FORWARDED_FOR'], ',') > 0) {
+                $addr = explode(",", $_SERVER['HTTP_X_FORWARDED_FOR']);
+                return trim($addr[0]);
+            } else {
+                return $_SERVER['HTTP_X_FORWARDED_FOR'];
+            }
+        } else {
+            return $_SERVER['REMOTE_ADDR'];
+        }
+    }
+
+    public function bearerToken()
+    {
+        $authorizationHeader = $this->header('Authorization');
+
+        if(!$authorizationHeader) return null;
+
+        if(preg_match("/^Bearer\s(.*)+$/", $authorizationHeader, $found)) {
+            return $authorizationHeader;
+        }
+
+        return null;
     }
 }

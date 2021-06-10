@@ -28,7 +28,10 @@
     "autoload": {
         "psr-4": {
             "MinasRouter\\": "src/"
-        }
+        },
+        "files": [
+            "src/Helpers/helpers.php"
+        ]
     },
     "scripts": {
         "router-tests": "vendor\\bin\\phpunit --testdox tests"

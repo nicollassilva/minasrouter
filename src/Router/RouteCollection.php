@@ -15,18 +15,25 @@ class RouteCollection
 {
     use RouteManagement, RouterHelpers;
 
+    /** @var string */
     protected $actionSeparator;
 
+    /** @var string */
     protected $currentUri;
 
+    /** @var object */
     protected $currentGroup;
 
+    /** @var string */
     protected $baseUrl;
 
+    /** @var object */
     protected $currentRoute;
 
+    /** @var string */
     protected $requestMethod;
 
+    /** @var array */
     protected $httpCodes = [
         "badRequest" => 400,
         "notAllowed" => 403,
@@ -36,6 +43,7 @@ class RouteCollection
         "redirect" => 302
     ];
 
+    /** @var array */
     protected $routes = [
         "GET" => [],
         "POST" => [],
@@ -45,6 +53,7 @@ class RouteCollection
         "REDIRECT" => []
     ];
 
+    /** @var array */
     protected $formSpoofingMethods = ["PUT", "PATCH", "DELETE"];
 
     public function __construct(String $separator, String $baseUrl)
@@ -65,6 +74,17 @@ class RouteCollection
     public function defineGroup(?RouteGroups $group = null): void
     {
         $this->currentGroup = $group;
+    }
+
+    /**
+     * Method responsible for returning the
+     * current route.
+     * 
+     * @return null|\MinasRouter\Router\RouteManager
+     */
+    public function getCurrentRoute()
+    {
+        return $this->currentRoute;
     }
 
     /**
@@ -264,15 +284,6 @@ class RouteCollection
 
         $this->resolveRequestMethod();
 
-        if(!isset($this->routes[$this->requestMethod])) {
-            $this->throwException(
-                "badRequest",
-                BadMethodCallException::class,
-                "The HTTP method [%s] is not supported.",
-                $this->requestMethod
-            );
-        }
-
         foreach ($this->routes[$this->requestMethod] as $route) {
             if (preg_match("~^" . $route->getRoute() . "$~", $this->currentUri)) {
                 $this->currentRoute = $route;
@@ -308,23 +319,10 @@ class RouteCollection
 
         if ($this->instanceOf($method, \Closure::class)) {
             $this->setHttpCode();
-
             return call_user_func($route->getAction(), ...$route->closureReturn());
         }
 
-        if (!class_exists($controller)) {
-            $this->setHttpCode($this->httpCodes["badRequest"]);
-
-            $this->throwException(
-                "badRequest",
-                BadMethodCallException::class,
-                "Class [%s::%s] doesn't exist.",
-                $controller,
-                $method
-            );
-        }
-
-        $obController = new $controller;
+        $obController = $this->resolveRouteController($controller);
 
         if (!method_exists($obController, $method)) {
             $this->setHttpCode($this->httpCodes["methodNotAllowed"]);
@@ -341,6 +339,28 @@ class RouteCollection
         $obController->{$method}(...$route->closureReturn());
 
         return null;
+    }
+
+    /**
+     * Method responsible for checking if the controller
+     * class exists and returns an instance of it.
+     * 
+     * @param string $controller
+     */
+    protected function resolveRouteController(String $controller)
+    {
+        if (!class_exists($controller)) {
+            $this->setHttpCode($this->httpCodes["badRequest"]);
+
+            $this->throwException(
+                "badRequest",
+                BadMethodCallException::class,
+                "Class [%s] doesn't exist.",
+                $controller
+            );
+        }
+
+        return new $controller;
     }
 
     /**

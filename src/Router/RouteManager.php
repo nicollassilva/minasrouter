@@ -180,7 +180,7 @@ class RouteManager
     {
         $getParams = $this->request()->getParams();
         $dinamycParameters = array_fill_keys($this->foundParameters(true, true), null);
-        
+
         $params = array_values(
             array_merge($dinamycParameters, $getParams)
         );
