@@ -294,6 +294,26 @@ class RouteCollection
     }
 
     /**
+     * Returns the URI based on group prefix.
+     * 
+     * @param string $uri
+     * 
+     * @return string
+     */
+    protected function resolveRouterUri(String $uri): String
+    {
+        $uri = $this->fixRouterUri($uri);
+
+        if ($this->instanceof($this->currentGroup, RouteGroups::class) && $this->currentGroup->prefix) {
+            $prefix = $this->fixRouterUri($this->currentGroup->prefix);
+
+            return $prefix . $uri;
+        }
+
+        return $uri;
+    }
+
+    /**
      * Method responsible for performing
      * route actions.
      * 

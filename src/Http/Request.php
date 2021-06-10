@@ -63,21 +63,21 @@ class Request
      * Method responsible for returning the
      * current route in parts.
      * 
-     * @return array|string
+     * @return array|string|null
      */
     protected function getParsedRoute(?String $data = null)
     {
         $parsedRoute = parse_url($this->fullUrl ?? "/");
 
-        if (!is_array($parsedRoute)) {
-            return null;
-        }
-
         if (empty($data)) {
             return $parsedRoute;
         }
 
-        return isset($parsedRoute[$data]) ? $parsedRoute[$data] : null;
+        if (isset($parsedRoute[$data])) {
+            return $parsedRoute[$data];
+        }
+
+        return null;
     }
 
     /**
@@ -143,7 +143,7 @@ class Request
      */
     public function query(?String $name = null, ?String $asDefault = null)
     {
-        if(!$name) {
+        if (!$name) {
             return $this->queryStrings;
         }
 
@@ -190,7 +190,7 @@ class Request
      */
     protected function resolveRouteData(String $route, array $routeParams): void
     {
-        $params = $this->getParsedRoute("path");
+        $params = $this->path();
 
         $diff = array_diff(explode('/', $params), explode('/', $route));
 
@@ -309,19 +309,6 @@ class Request
     }
 
     /**
-     * Method responsible for returning only
-     * the data passed in parameter.
-     * 
-     * @param string $only
-     * 
-     * @return array|string
-     */
-    public function only(String $only)
-    {
-        $result = [];
-    }
-
-    /**
      * Method responsible for returning all header data.
      * 
      * @return array
@@ -380,13 +367,18 @@ class Request
         }
     }
 
+    /**
+     * Return the bearer token.
+     * 
+     * @return null|string
+     */
     public function bearerToken()
     {
         $authorizationHeader = $this->header('Authorization');
 
-        if(!$authorizationHeader) return null;
+        if (!$authorizationHeader) return null;
 
-        if(preg_match("/^Bearer\s(.*)+$/", $authorizationHeader, $found)) {
+        if (preg_match("/^Bearer\s(.*)+$/", $authorizationHeader, $found)) {
             return $authorizationHeader;
         }
 
