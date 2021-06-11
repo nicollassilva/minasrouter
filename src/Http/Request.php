@@ -196,14 +196,11 @@ class Request
 
         if (!empty($diff)) {
             foreach ($routeParams as $index => $param) {
-                if (!isset($diff[$index])) return;
-
-                if ($this->httpMethod != 'GET') {
-                    $this->params[$param] = rawurldecode($diff[$index]);
+                if (!isset($diff[$index])) {
                     continue;
                 }
 
-                $this->data[$param] = rawurldecode($diff[$index]);
+                $this->params[$param] = rawurldecode($diff[$index]);
             }
         }
 
