@@ -32,6 +32,10 @@ Simple, fast and VERY functional. **MinasRouter** is a PHP routes component for 
 
 > With **two lines** you start using routes!
 
+# Application example
+
+Maybe you are a person who learns by watching, you can access the [example](https://github.com/nicollassilva/minasrouter/tree/master/example) folder, which contains an folders architecture example of how we use MinasRouter.
+
 # Tests
 
 > You can check all tests done [here](https://github.com/nicollassilva/minasrouter/tree/master/tests).
