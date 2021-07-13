@@ -358,6 +358,16 @@ class RouteManager
     }
 
     /**
+     * Get the original uri route.
+     * 
+     * @return string
+     */
+    public function getOriginalRoute(): String
+    {
+        return $this->originalRoute;
+    }
+
+    /**
      * Method responsible for defining the middlewares of the route.
      * 
      * @param string|array $middleware

@@ -98,7 +98,7 @@ final class RouteMiddlewareTest extends TestCase
                     Route::get("/forgout-password", "DashboardController@forgoutPassword")->name("forgout.password"),
                     Route::get("/app", "AppController@index")->name("app.index")->middleware("isLogged"),
                     Route::get("/admins", "AppController@admins")->name("app.admins")->middleware("isAdmin, isLogged"),
-                    Route::get("/forgout-email", "DashboardController@forgoutEmail")->name("forgout.email"),
+                    Route::get("/forgot-email", "DashboardController@forgoutEmail")->name("forgot.email"),
                     Route::get("/server-status", "DashboardController@serverStatus")->name("server.status"),
                     Route::get("/posts", "AppController@posts")->name("app.posts")->middleware(["isLogged", "isModerator"]),
                     Route::get("/admin-ranking", "DashboardController@adminRanking")->name("admin.ranking")

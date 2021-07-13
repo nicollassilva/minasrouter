@@ -55,6 +55,8 @@ composer require nicollassilva/minasrouter
 # Documentation
 
 ### 1. Configuration
+- [Redirect to Public Folder](https://github.com/nicollassilva/minasrouter#redirect-to-public-folder)
+* **Public Folder Configuration**
 - [Apache](https://github.com/nicollassilva/minasrouter#apache)
 - [Nginx](https://github.com/nicollassilva/minasrouter#apache)
 ### 2. Routes
@@ -95,6 +97,20 @@ composer require nicollassilva/minasrouter
 
 To start using MinasRouter, all navigation management must be redirected to your system's default route file, which will do the entire route handling process and return what was configured by default.
 Configure according to the examples below and according to your server.
+
+## Redirect to Public Folder
+
+```apacheconf
+RewriteEngine on
+Options All -Indexes
+
+RewriteCond %{HTTPS} on
+RewriteCond %{HTTP_HOST} (www\.)?localhost
+RewriteRule (.*) https://%{HTTP_HOST} [L,R=301]
+
+RewriteCond %{REQUEST_URI} !public/
+RewriteRule (.*) /public/$1 [L]
+```
 
 ### apache
 
