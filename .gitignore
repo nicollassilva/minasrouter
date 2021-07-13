@@ -1,4 +1,4 @@
 /vendor/
 /app/
-index.php
-.htaccess
+/index.php
+/.htaccess
