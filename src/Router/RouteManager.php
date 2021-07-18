@@ -2,9 +2,11 @@
 
 namespace MinasRouter\Router;
 
+use Closure;
 use MinasRouter\Http\Request;
 use MinasRouter\Traits\RouteManagerUtils;
 use MinasRouter\Router\Middlewares\MiddlewareCollection;
+use ReflectionMethod;
 
 class RouteManager
 {
@@ -89,12 +91,12 @@ class RouteManager
      */
     private function compileGroupData()
     {
-        if(!is_a($this->group, RouteGroups::class)) return null;
+        if (!is_a($this->group, RouteGroups::class)) return null;
 
         $this->defaultName = $this->name = $this->group->name;
         $this->defaultNamespace = $this->group->namespace;
 
-        if(is_a($this->group->middlewares, MiddlewareCollection::class)) {
+        if (is_a($this->group->middlewares, MiddlewareCollection::class)) {
             $this->middleware = $this->group->middlewares;
         }
 
@@ -186,7 +188,7 @@ class RouteManager
      * 
      * @return array
      */
-    public function closureReturn(): array
+    protected function getAllParameters(): array
     {
         $getParams = $this->request()->getParams();
         $dinamycParameters = array_fill_keys($this->foundParameters(true, true), null);
@@ -195,10 +197,44 @@ class RouteManager
             array_merge($dinamycParameters, $getParams)
         );
 
-        return [
-            ...$params,
-            $this->request()
-        ];
+        return $params;
+    }
+
+    public function getRouteArguments($method, $object)
+    {
+        if (is_a($method, \Closure::class)) {
+            dd("É uma closure.");
+        }
+
+        $reflector = new ReflectionMethod($object, $method);
+
+        if (empty($methodParameters = $reflector->getParameters())) return;
+
+        $allRouteParameters = $this->getAllParameters();
+
+        $parametersToReturn = [];
+
+        foreach ($methodParameters as $parameter) {
+            $position = $parameter->getPosition();
+            $type = $parameter->getType();
+
+            if (!$type || $type->isBuiltin()) {
+                $parametersToReturn[] = isset($allRouteParameters[$position]) ? $allRouteParameters[$position] : null;
+            } else {
+                $className = $type->getName();
+
+                if ($this->request() instanceof $className) {
+                    $parametersToReturn[] = $this->request();
+                    continue;
+                }
+
+                if (class_exists($className)) {
+                    $parametersToReturn[] = new $className;
+                }
+            }
+        }
+
+        return $parametersToReturn;
     }
 
     /**
@@ -233,7 +269,7 @@ class RouteManager
 
         return null;
     }
-    
+
     /**
      * Method responsible for returning the correct controller,
      * including the namespace of a group.
@@ -244,12 +280,12 @@ class RouteManager
      */
     private function resolveHandler(String $handler)
     {
-        if(!$this->defaultNamespace) {
+        if (!$this->defaultNamespace) {
             return $handler;
         }
 
         $namespace = $this->parseDefaultString($this->defaultNamespace);
-        
+
         return $namespace . $this->parseDefaultString($handler);
     }
 
@@ -376,7 +412,7 @@ class RouteManager
      */
     public function middleware($middleware): RouteManager
     {
-        if(is_a($this->middleware, MiddlewareCollection::class)) {
+        if (is_a($this->middleware, MiddlewareCollection::class)) {
             $middleware = $this->middleware->storeMiddleware($middleware);
         }
 

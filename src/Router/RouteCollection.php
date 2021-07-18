@@ -10,6 +10,7 @@ use MinasRouter\Exceptions\BadMethodCallException;
 use MinasRouter\Exceptions\MethodNotAllowedException;
 use MinasRouter\Router\Middlewares\MiddlewareCollection;
 use MinasRouter\Exceptions\BadMiddlewareExecuteException;
+use ReflectionMethod;
 
 class RouteCollection
 {
@@ -343,6 +344,8 @@ class RouteCollection
         }
 
         $obController = $this->resolveRouteController($controller);
+        
+        $parameters = $route->getRouteArguments($method, $obController);
 
         if (!method_exists($obController, $method)) {
             $this->setHttpCode($this->httpCodes["methodNotAllowed"]);
@@ -356,7 +359,7 @@ class RouteCollection
             );
         }
 
-        $obController->{$method}(...$route->closureReturn());
+        $obController->{$method}(...$parameters);
 
         return null;
     }
