@@ -71,7 +71,7 @@ composer require nicollassilva/minasrouter
 - [Dynamic Parameters (Required and Optional)](https://github.com/nicollassilva/minasrouter#dynamic-parameters-required-and-optional)
 - [Validating a Dynamic Parameter](https://github.com/nicollassilva/minasrouter#validating-a-dynamic-parameter)
 * **Middlewares**
-- [Set Global Middlewares](https://github.com/nicollassilva/minasrouter#global-middlewares)
+- [Set Global Middlewares](https://github.com/nicollassilva/minasrouter#set-global-middlewares)
 - [Attach in a route](https://github.com/nicollassilva/minasrouter#attach-in-a-route)
 * **Route Groups**
 - [All Methods](https://github.com/nicollassilva/minasrouter#route-groups)
