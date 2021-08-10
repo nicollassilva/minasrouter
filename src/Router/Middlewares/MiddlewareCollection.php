@@ -113,9 +113,9 @@ class MiddlewareCollection
             $mid = trim(rtrim($mid));
             
             if (is_string($currentMiddleware)) {
-                $currentMiddleware .= ", {$mid}";
+                $currentMiddleware = rtrim(trim(preg_replace("/\s?".$mid."\,?/", "", $currentMiddleware), ' '), ',');
             } else {
-                $currentMiddleware[] = $mid;
+                $currentMiddleware = array_values(array_filter($currentMiddleware, fn($middleware) => $middleware != $mid));
             }
         }
 
