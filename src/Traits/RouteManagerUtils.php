@@ -6,9 +6,6 @@ use MinasRouter\Router\Middlewares\MiddlewareCollection;
 
 trait RouteManagerUtils
 {
-    /** @var object */
-    protected $middleware;
-    
     public abstract function getDefaultName();
     public abstract function setName(String $name);
     public abstract function setWhereData(String $key, String $value);
@@ -133,6 +130,9 @@ trait RouteManagerUtils
             return;
         }
 
+        $this->middleware = clone $this->middleware;
         $this->middleware->removeMiddleware($middleware);
+
+        return $this;
     }
 }

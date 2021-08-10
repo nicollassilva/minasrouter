@@ -36,6 +36,9 @@ class RouteManager
 
     /** @var string */
     protected $separator;
+    
+    /** @var object */
+    protected $middleware;
 
     /** @var array */
     protected $where = [];

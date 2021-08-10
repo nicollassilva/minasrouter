@@ -103,9 +103,8 @@ class MiddlewareCollection
      * 
      * @param array $middleware
      * 
-     * @return string|array
      */
-    private function destroyMiddleware(Array $middleware)
+    private function destroyMiddleware(Array $middleware): void
     {
         $currentMiddleware = $this->middlewares;
 
@@ -119,7 +118,7 @@ class MiddlewareCollection
             }
         }
 
-        return $currentMiddleware;
+        $this->middlewares = $currentMiddleware;
     }
 
     /**

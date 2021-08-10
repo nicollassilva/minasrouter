@@ -100,4 +100,35 @@ final class RouteGroupsTest extends TestCase
                 }
             });
     }
+
+    /**
+     * @test
+     */
+    public function check_if_all_routes_have_group_middleware()
+    {
+        Route::middleware("isLogged")
+            ->namespace("App\Http\Controllers")
+            ->prefix("user")
+            ->name("user.")
+            ->group(function() {
+                $routes = [
+                    Route::get("/", ["User", "index"])->name("index"),
+                    Route::put("/settings", ["User", "updateSettings"])->name("updateSettings"),
+                    Route::get("/settings", ["User", "settings"])->name("settings"),
+                    Route::get("/logout", ["User", "logout"])->name("logout")
+                ];
+
+                $routeWithoutMiddleware = Route::get("/{id}/profile", ["User", "profile"])  
+                    ->name("profile")
+                    ->withoutMiddleware("isLogged");
+
+                foreach ($routes as $route) {
+                    $routeMiddleware = $route->getMiddleware();
+
+                    $this->assertEquals("isLogged", $routeMiddleware->get());
+                }
+
+                $this->assertEquals("", $routeWithoutMiddleware->getMiddleware()->get());
+            }); 
+    }
 }
