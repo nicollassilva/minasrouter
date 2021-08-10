@@ -11,16 +11,7 @@ class RouteManager
     use RouteManagerUtils;
 
     /** @var string */
-    protected $separator;
-
-    /** @var string */
     protected $name;
-
-    /** @var string */
-    private $defaultName;
-
-    /** @var string */
-    private $defaultNamespace;
 
     /** @var object */
     protected $group;
@@ -28,37 +19,43 @@ class RouteManager
     /** @var string */
     protected $route;
 
-    /** @var string */
-    protected $originalRoute;
+    /** @var string|\Closure */
+    protected $action;
 
     /** @var string */
     protected $fullUrl;
 
-    /** @var string */
-    protected $defaultRegex = "[^/]+";
-
-    /** @var object */
-    protected $middleware;
-
-    /** @var string|\Closure */
-    protected $action;
-
     /** @var string|null */
     protected $handler;
-
-    /** @var array */
-    protected $where = [];
 
     /** @var object */
     protected $request;
 
+    /** @var string */
+    private $defaultName;
+
+    /** @var string */
+    protected $separator;
+
+    /** @var array */
+    protected $where = [];
+
+    /** @var string */
+    protected $originalRoute;
+
+    /** @var string */
+    private $defaultNamespace;
+
+    /** @var string */
+    protected $defaultRegex = "[^/]+";
+
     public function __construct($fullUrl, $uri, $callback, String $separator, ?RouteGroups $group = null)
     {
-        $this->fullUrl = $fullUrl;
         $this->route = $uri;
+        $this->group = $group;
+        $this->fullUrl = $fullUrl;
         $this->originalRoute = $uri;
         $this->separator = $separator;
-        $this->group = $group;
 
         $this->request = new Request(
             $this->fullUrl,

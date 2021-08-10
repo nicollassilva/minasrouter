@@ -7,14 +7,14 @@ use MinasRouter\Router\Middlewares\MiddlewareRoute;
 
 class MiddlewareCollection
 {
+    /** @var array */
+    protected $queue;
+
     /** @var array|string */
     protected $middlewares;
 
     /** @var object */
     protected $currentRequest;
-
-    /** @var array */
-    protected $queue;
 
     /** @var int = 0 */
     protected $currentQueueNumber = 0;
@@ -80,6 +80,46 @@ class MiddlewareCollection
         }
 
         return $this->resolveLaterMiddleware($middleware);
+    }
+
+    /**
+     * Remove a middleware of the middleware queue.
+     * 
+     * @param string|array $middleware
+     * 
+     * @return string|array
+     */
+    public function removeMiddleware($middleware)
+    {
+        if (is_string($middleware)) {
+            $middleware = explode(",", $middleware);
+        }
+
+        return $this->destroyMiddleware($middleware);
+    }
+
+    /**
+     * Destroy the middlewares of individual route.
+     * 
+     * @param array $middleware
+     * 
+     * @return string|array
+     */
+    private function destroyMiddleware(Array $middleware)
+    {
+        $currentMiddleware = $this->middlewares;
+
+        foreach ($middleware as $mid) {
+            $mid = trim(rtrim($mid));
+            
+            if (is_string($currentMiddleware)) {
+                $currentMiddleware .= ", {$mid}";
+            } else {
+                $currentMiddleware[] = $mid;
+            }
+        }
+
+        return $currentMiddleware;
     }
 
     /**

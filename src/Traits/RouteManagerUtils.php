@@ -2,11 +2,16 @@
 
 namespace MinasRouter\Traits;
 
+use MinasRouter\Router\Middlewares\MiddlewareCollection;
+
 trait RouteManagerUtils
 {
-    public abstract function setWhereData(String $key, String $value);
-    public abstract function setName(String $name);
+    /** @var object */
+    protected $middleware;
+    
     public abstract function getDefaultName();
+    public abstract function setName(String $name);
+    public abstract function setWhereData(String $key, String $value);
 
     /**
      * Method responsible for defining the regular
@@ -114,5 +119,20 @@ trait RouteManagerUtils
     public function as(String $name)
     {
         return $this->name($name);
+    }
+
+    /**
+     * Remove a group middleware of the route
+     * 
+     * @param string|array $middleware
+     * 
+     */
+    public function withoutMiddleware($middleware)
+    {
+        if(!is_a($this->middleware, MiddlewareCollection::class)) {
+            return;
+        }
+
+        $this->middleware->removeMiddleware($middleware);
     }
 }

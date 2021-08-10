@@ -16,7 +16,7 @@ class RouteCollection
     use RouteManagement, RouterHelpers;
 
     /** @var string */
-    protected $actionSeparator;
+    protected $baseUrl;
 
     /** @var string */
     protected $currentUri;
@@ -24,14 +24,14 @@ class RouteCollection
     /** @var object */
     protected $currentGroup;
 
-    /** @var string */
-    protected $baseUrl;
-
     /** @var object */
     protected $currentRoute;
 
     /** @var string */
     protected $requestMethod;
+
+    /** @var string */
+    protected $actionSeparator;
 
     /** @var array */
     protected $httpCodes = [
@@ -58,8 +58,8 @@ class RouteCollection
 
     public function __construct(String $separator, String $baseUrl)
     {
-        $this->actionSeparator = $separator;
         $this->baseUrl = $baseUrl;
+        $this->actionSeparator = $separator;
         $this->currentUri = filter_input(INPUT_GET, "route", FILTER_DEFAULT) ?? "/";
     }
 

@@ -7,20 +7,20 @@ use MinasRouter\Router\Middlewares\MiddlewareCollection;
 
 class RouteGroups
 {
-    /** @var object */
-    protected $collection;
-
     /** @var string */
-    public $namespace;
+    public $name;
 
     /** @var string */
     public $prefix;
 
     /** @var string */
-    public $name;
+    public $namespace;
 
     /** @var object */
     public $middlewares;
+
+    /** @var object */
+    protected $collection;
 
     public function __construct(RouteCollection $collection)
     {
