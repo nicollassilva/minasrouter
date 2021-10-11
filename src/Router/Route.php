@@ -51,7 +51,7 @@ abstract class Route extends RouteCollection
 
     /**
      * @param string $uri
-     * @param \Closure|array $callback
+     * @param \Closure|array|string $callback
      * 
      * @return \MinasRouter\Router\RouteManager
      */
@@ -62,7 +62,7 @@ abstract class Route extends RouteCollection
 
     /**
      * @param string $uri
-     * @param \Closure|array $callback
+     * @param \Closure|array|string $callback
      * 
      * @return \MinasRouter\Router\RouteManager
      */
@@ -73,7 +73,7 @@ abstract class Route extends RouteCollection
 
     /**
      * @param string $uri
-     * @param \Closure|array $callback
+     * @param \Closure|array|string $callback
      * 
      * @return \MinasRouter\Router\RouteManager
      */
@@ -84,7 +84,7 @@ abstract class Route extends RouteCollection
 
     /**
      * @param string $uri
-     * @param \Closure|array $callback
+     * @param \Closure|array|string $callback
      * 
      * @return \MinasRouter\Router\RouteManager
      */
@@ -106,7 +106,8 @@ abstract class Route extends RouteCollection
 
     /**
      * @param string $uri
-     * @param \Closure|array $callback
+     * @param string $redirect
+     * @param int $httpCode
      * 
      * @return \MinasRouter\Router\RouteManager
      */
@@ -117,7 +118,7 @@ abstract class Route extends RouteCollection
 
     /**
      * @param string $uri
-     * @param \Closure|array $callback
+     * @param string $redirect
      * 
      * @return \MinasRouter\Router\RouteManager
      */
@@ -132,7 +133,7 @@ abstract class Route extends RouteCollection
      * 
      * @return \MinasRouter\Router\RouteManager
      */
-    public static function match(array $methods, String $uri, $callback)
+    public static function match(Array $methods, String $uri, $callback)
     {
         return self::$collection->addMultipleHttpRoutes($uri, $callback, $methods);
     }
@@ -156,5 +157,15 @@ abstract class Route extends RouteCollection
     public static function execute()
     {
         self::$collection->run();
+    }
+
+    /**
+     * @param \Closure|array|string
+     * 
+     * @return void
+     */
+    public static function fallback($callback)
+    {
+        self::$collection->addRoute("GET", "/404", $callback)->name('fallback');
     }
 }

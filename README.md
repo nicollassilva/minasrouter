@@ -84,6 +84,7 @@ composer require nicollassilva/minasrouter
 - [Route Redirect](https://github.com/nicollassilva/minasrouter#route-redirect)
 - [Route with Individual Middleware in Group](https://github.com/nicollassilva/minasrouter#route-with-individual-middleware-in-group)
 - [Route with Different Name in Group](https://github.com/nicollassilva/minasrouter#route-with-different-name-in-group)
+- [Fallback Routes](https://github.com/nicollassilva/minasrouter#fallback-routes)
 
 ### 3. Request Route
 - [Introduction](https://github.com/nicollassilva/minasrouter#request-route)
@@ -455,6 +456,18 @@ Route::permanentRedirect("/here", "/there");
 // You can return an existing route
 Route::redirect("/index", "web.index");
 ```
+
+### Fallback Routes
+
+The fallback route is responsible when there is no route registered with that url address. Whenever there is no route that was requested by the user, the fallback route will be called.
+
+```php
+Route::fallback(function() {
+    echo 'Route error!';
+    // ...
+});
+```
+
 > OBS: Tenha cuidado caso queira redirecionar para uma rota existente, se nela conter argumentos dinâmicos, ela retornará todo o regex e irá causar erro.
 
 Be careful you redirect to an existing route, because if it has dynamic arguments, it will return the entire regex and error returned.

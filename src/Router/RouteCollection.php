@@ -322,6 +322,10 @@ class RouteCollection
     protected function dispatchRoute(): ?\Closure
     {
         if (!$route = $this->currentRoute) {
+            if($fallbackRoute = $this->getByName('fallback')) {
+                return $this->executeRoute($fallbackRoute);
+            }
+            
             $this->setHttpCode($this->httpCodes["notFound"]);
 
             $this->throwException(
@@ -362,6 +366,18 @@ class RouteCollection
     }
 
     /**
+     * Responsible for execute the route
+     * 
+     * @param RouteManager $route
+     * 
+     * @return mixed|false
+     */
+    protected function executeRoute(RouteManager $route)
+    {
+        return call_user_func($route->getAction(), ...$route->closureReturn());
+    }
+
+    /**
      * Method responsible for checking if the controller
      * class exists and returns an instance of it.
      * 
@@ -387,7 +403,7 @@ class RouteCollection
      * Method responsible for executing
      * the middlewares of the current route.
      * 
-     * @return void
+     * @return mixed|false|void
      */
     protected function executeMiddlewares(RouteManager $route)
     {
