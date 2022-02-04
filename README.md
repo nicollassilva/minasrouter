@@ -73,6 +73,7 @@ composer require nicollassilva/minasrouter
 * **Middlewares**
 - [Set Global Middlewares](https://github.com/nicollassilva/minasrouter#set-global-middlewares)
 - [Attach in a route](https://github.com/nicollassilva/minasrouter#attach-in-a-route)
+- [Delete a middleware](https://github.com/nicollassilva/minasrouter#delete-a-middleware)
 * **Route Groups**
 - [All Methods](https://github.com/nicollassilva/minasrouter#route-groups)
 - [Named Group](https://github.com/nicollassilva/minasrouter#named-group)
@@ -339,6 +340,22 @@ Route::get("/series", function() {
 Route::get("/series", function() {
     // ...
 })->middleware(App\Middlewares\VerifyCsrfToken::class);
+```
+
+### Delete a middleware
+
+Sometimes you create a group of routes with middleware, but you want only one or a few routes to be without a specific middleware, you can do that.
+
+```php
+Route::middleware(['auth', 'api'])->group(function() {
+    Route::get('/', function() {
+        // All middlewares will works in this route
+    });
+    
+    Route::get('/no-api', function() {
+        // Only the auth middleware works here
+    })->withoutMiddleware('api');
+});
 ```
 
 # Route Groups
