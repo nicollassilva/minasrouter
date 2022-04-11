@@ -337,7 +337,13 @@ class RouteCollection
             );
         }
 
-        $this->executeMiddlewares($route);
+        if(!$middlewareResponse = $this->executeMiddlewares($route)) {
+            return null;
+        }
+
+        if(is_callable($middlewareResponse)) {
+            return call_user_func($middlewareResponse);
+        }
 
         [$controller, $method] = $route->getCompleteAction();
 
@@ -411,7 +417,13 @@ class RouteCollection
 
             $route->getMiddleware()->setRequest($route->request());
 
-            if (!$route->getMiddleware()->execute()) {
+            $callMiddleware = $route->getMiddleware()->execute();
+
+            if($callMiddleware === true) {
+                return true;
+            }
+
+            if ($callMiddleware === false || $callMiddleware === null) {
                 $this->setHttpCode($this->httpCodes["notFound"]);
 
                 $this->throwException(
@@ -420,7 +432,15 @@ class RouteCollection
                     "Some middleware has not approved your request."
                 );
             }
+
+            if(is_string($callMiddleware)) {
+                die($callMiddleware);
+            }
+
+            return $callMiddleware;
         }
+
+        return true;
     }
 
     /**
