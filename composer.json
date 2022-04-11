@@ -11,8 +11,8 @@
         "Routes"
     ],
     "require-dev": {
-        "symfony/var-dumper": "^5.3",
-        "phpunit/phpunit": "9"
+        "symfony/var-dumper": "^6.0.6",
+        "phpunit/phpunit": "^9"
     },
     "license": "MIT",
     "authors": [
@@ -23,11 +23,12 @@
         }
     ],
     "require": {
-        "php": ">=7.2"
+        "php": ">=8.0"
     },
     "autoload": {
         "psr-4": {
-            "MinasRouter\\": "src/"
+            "MinasRouter\\": "src/",
+            "App\\": "app/"
         },
         "files": [
             "src/Helpers/helpers.php"

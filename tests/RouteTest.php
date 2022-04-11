@@ -184,12 +184,12 @@ final class RouteTest extends TestCase
             $routeRegex = $route->getRoute();
 
             if (!is_array($expectedResult)) {
-                $this->assertRegExp("~^{$routeRegex}$~", $expectedResult);
+                $this->assertMatchesRegularExpression("~^{$routeRegex}$~", $expectedResult);
                 continue;
             }
 
             foreach ($expectedResult as $version => $result) {
-                $this->assertRegExp("~^{$routeRegex}$~", $result);
+                $this->assertMatchesRegularExpression("~^{$routeRegex}$~", $result);
             }
         }
     }
